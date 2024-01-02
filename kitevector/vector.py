@@ -19,7 +19,7 @@ class KiteVector:
 		self.fragcnt = fragcnt
 		
 
-	def nbest(self, embedding, threshold, nbest = 50, index=None):
+	def inner_product(self, embedding, threshold, nbest = 50, index=None):
 
 		embed = '{' + ",".join([str(item) for item in embedding]) + '}'
 		sql = '''select embedding <#> '{}', docid from "{}" where embedding <#> '{}' > {} '''.format(embed, self.path, embed, threshold)

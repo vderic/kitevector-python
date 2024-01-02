@@ -78,6 +78,6 @@ To get the N-Best documents,
 	nbest = 3
 
 	vs = vector.KiteVector(hosts, path, csvspec)
-	res = vs.nbest(embedding, threshold, nbest)
+	res = vs.inner_product(embedding, threshold, nbest)
 	print(res)
 ```

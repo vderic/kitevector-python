@@ -17,7 +17,7 @@ if __name__ == "__main__":
 
 	vs = vector.KiteVector(hosts, path, csvspec)
 
-	res = vs.nbest([4,6,8], -70, 3)
+	res = vs.inner_product([4,6,8], -70, 3)
 	print(res)
 
 
