@@ -13,3 +13,9 @@ Install kite client
 % cd kite-client-sdk/python
 % pip3 install .
 ```
+
+Run test,
+
+```
+% python3 test/test.py
+```
