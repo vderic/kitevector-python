@@ -1,4 +1,10 @@
+Install lz4, pandas, numpy package before install kite client,
 
+```
+% pip3 install pandas
+% pip3 install numpy
+% pip3 intall lz4
+```
 
 Install kite client
 
