@@ -39,7 +39,7 @@ id bigint,
 docid text,
 index text,
 embedding vector(3)
-) server kite_svr options (schema_name 'public', table_name 'tmp/vector/vector*.csv', fmt 'csv');
+) server kite_svr options (schema_name 'public', table_name 'vector/vector*.csv', fmt 'csv');
 ```
 
 Schema in GPDB:
@@ -54,7 +54,7 @@ id bigint,
 docid text,
 index text,
 embedding   vector(3)
-) server kite_svr options (table_name 'tmp/vector/vector*.csv', fmt 'csv', mpp_execute 'multi servers');
+) server kite_svr options (table_name 'vector/vector*.csv', fmt 'csv', mpp_execute 'multi servers');
 ```
 
 
