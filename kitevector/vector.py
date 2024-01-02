@@ -4,7 +4,7 @@ import heapq
 from kite import kite
 from kite.xrg import xrg
 
-class KiteVectorStore:
+class KiteVector:
 
 	schema =  [('id', 'int64'), ('docid', 'string'), ('index', 'string'), ('embedding', 'float[]', 0, 0)]
 	path = None
