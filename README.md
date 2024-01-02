@@ -17,8 +17,8 @@ Install kite client,
 Install Kite Vector Store,
 
 ```
-% git clone git@github.com:vderic/kitevs-python.git
-% cd kitevs-python
+% git clone git@github.com:vderic/kitevector-python.git
+% cd kitevector-python
 % pip3 install .
 ```
 
