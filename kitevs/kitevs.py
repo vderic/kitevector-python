@@ -23,7 +23,7 @@ class KiteVectorStore:
 
 		embed = '{' + ",".join([str(item) for item in embedding]) + '}'
 		sql = '''select embedding <#> '{}', docid from "{}" where embedding <#> '{}' > {} '''.format(embed, self.path, embed, threshold)
-		print(sql)
+		#print(sql)
 
 		columns = [c[0] for c in self.schema]
 		kitecli = kite.KiteClient()
@@ -31,14 +31,14 @@ class KiteVectorStore:
 		try:
 			kitecli.host(self.hosts).sql(sql).schema(self.schema).filespec(self.filespec).fragment(-1, self.fragcnt).submit()
 
-			print("run SQL: ", sql)
+			#print("run SQL: ", sql)
 
 			while True:
 				iter = kitecli.next_row()
 				if iter is None:
 					break
 				else:
-					print("flag=", iter.flags, ", values=", iter.values)
+					#print("flag=", iter.flags, ", values=", iter.values)
 					#print(tuple(iter.values))
 					if len(h) <= nbest:
 						heapq.heappush(h, tuple(iter.values))
@@ -56,6 +56,5 @@ class KiteVectorStore:
 		except OSError as msg:
 			print(msg)
 		finally:
-			print("END")
 			kitecli.close()
 
