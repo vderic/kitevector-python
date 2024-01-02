@@ -74,7 +74,7 @@ To get the N-Best documents,
 	threshold = 0.8
 	nbest = 3
 
-	vs = kitevs.KiteVectorStore(hosts, path, filespec)
+	vs = vector.KiteVectorStore(hosts, path, filespec)
 	res = vs.nbest(embedding, threshold, nbest)
 	print(res)
 ```

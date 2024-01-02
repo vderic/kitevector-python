@@ -5,7 +5,7 @@ import pandas as pd
 
 from kite import kite
 from kite.xrg import xrg
-from kitevs import kitevs
+from kitevector import vector
 
 if __name__ == "__main__":
 
@@ -13,7 +13,7 @@ if __name__ == "__main__":
 	filespec = kite.CsvFileSpec()
 	hosts = ['localhost:7878']
 
-	vs = kitevs.KiteVectorStore(hosts, path, filespec)
+	vs = vector.KiteVectorStore(hosts, path, filespec)
 
 	res = vs.nbest([4,6,8], -70, 3)
 	print(res)
