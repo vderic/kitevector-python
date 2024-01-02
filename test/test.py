@@ -15,7 +15,7 @@ if __name__ == "__main__":
 
 	vs = kitevs.KiteVectorStore(hosts, path, filespec)
 
-	res = vs.nbest([4,6,8], None, -100, 3)
+	res = vs.nbest([4,6,8], None, -70, 3)
 	print(res)
 
 
