@@ -55,6 +55,7 @@ class KiteVector:
 
 		except OSError as msg:
 			print(msg)
+			raise
 		finally:
 			kitecli.close()
 
