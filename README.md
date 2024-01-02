@@ -68,13 +68,16 @@ To get the N-Best documents,
 
 ```
 	path = 'vector/vector*.csv'
-	filespec = kite.CsvFileSpec()
+	# use csv as source file
+	csvspec = kite.CsvFileSpec()
+	# use parquet as source file
+	parquetspec = kite.ParquetFileSpec()
 	hosts = ['localhost:7878']
 	embedding = [4,6,8]
 	threshold = 0.8
 	nbest = 3
 
-	vs = vector.KiteVector(hosts, path, filespec)
+	vs = vector.KiteVector(hosts, path, csvspec)
 	res = vs.nbest(embedding, threshold, nbest)
 	print(res)
 ```
