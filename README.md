@@ -22,6 +22,42 @@ Install Kite Vector Store,
 % pip3 install .
 ```
 
+Default Schema in Kite:
+```
+schema =  [('id', 'int64'), ('docid', 'string'), ('index', 'string'), ('embedding', 'float[]', 0, 0)]
+```
+
+Schema in PostgreSQL:
+```
+create extension vector;
+create extension kite_fdw;
+create server kite_svr FOREIGN DATA WRAPPER kite_fdw
+OPTIONS (host '127.0.0.1:7878', port '5432', dbname 'pgsql', fragcnt '3', extensions 'vector');
+DROP FOREIGN TABLE IF EXISTS ai_ext;
+CREATE FOREIGN TABLE ai_ext (
+id bigint,
+docid text,
+index text,
+embedding vector(3)
+) server kite_svr options (schema_name 'public', table_name 'tmp/vector/vector*.csv', fmt 'csv');
+```
+
+Schema in GPDB:
+```
+create extension vector;
+create extension kite_fdw;
+create server kite_svr FOREIGN DATA WRAPPER kite_fdw
+OPTIONS (host '127.0.0.1:7878', extensions 'vector');
+DROP EXTERNAL TABLE IF EXISTS ai_ext;
+CREATE FOREIGN TABLE ai_ext (
+id bigint,
+docid text,
+index text,
+embedding   vector(3)
+) server kite_svr options (table_name 'tmp/vector/vector*.csv', fmt 'csv', mpp_execute 'multi servers');
+```
+
+
 Run test,
 
 ```
