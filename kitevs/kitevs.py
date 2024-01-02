@@ -59,15 +59,3 @@ class KiteVectorStore:
 			print("END")
 			kitecli.close()
 
-if __name__ == "__main__":
-
-	path = 'tmp/vector/vector*.csv'
-	filespec = kite.CsvFileSpec()
-	hosts = ['localhost:7878']
-
-	vs = KiteVectorStore(hosts, path, filespec)
-
-	res = vs.nbest([4,6,8], None, -100, 3)
-	print(res)
-
-
