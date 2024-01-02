@@ -27,3 +27,18 @@ Run test,
 ```
 % python3 test/test.py
 ```
+
+To get the N-Best documents,
+
+```
+	path = 'vector/vector*.csv'
+	filespec = kite.CsvFileSpec()
+	hosts = ['localhost:7878']
+	embedding = [4,6,8]
+	threshold = 0.8
+	nbest = 3
+
+	vs = kitevs.KiteVectorStore(hosts, path, filespec)
+	res = vs.nbest(embedding, None, threshold, nbest)
+	print(res)
+```
