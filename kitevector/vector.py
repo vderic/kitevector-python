@@ -6,7 +6,7 @@ from kite.xrg import xrg
 
 class KiteVector:
 
-	schema =  [('id', 'int64'), ('docid', 'string'), ('index', 'string'), ('embedding', 'float[]', 0, 0)]
+	schema =  [('id', 'int64'), ('docid', 'string'), ('embedding', 'float[]', 0, 0)]
 	path = None
 	filespec = None
 	hosts = None
@@ -19,13 +19,16 @@ class KiteVector:
 		self.fragcnt = fragcnt
 		
 
-	def inner_product(self, embedding, threshold, nbest = 50, index=None):
+	def inner_product(self, embedding, threshold, nbest = 50, filter=None):
 
 		embed = '{' + ",".join([str(item) for item in embedding]) + '}'
 		sql = '''select embedding <#> '{}', docid from "{}" where embedding <#> '{}' > {} '''.format(embed, self.path, embed, threshold)
 		#print(sql)
 
-		columns = [c[0] for c in self.schema]
+		if filter is not None:
+			sql = sql + ' AND ' + 'id IN (' + ','.join([str(id) for id in filter]) + ')'
+
+		#columns = [c[0] for c in self.schema]
 		kitecli = kite.KiteClient()
 		h = []
 		try:
