@@ -12,7 +12,7 @@ if __name__ == "__main__":
 
 	vs = vector.KiteVector(hosts, path, filespec)
 
-	res = vs.inner_product([4,6,8], -100, 3, filter=[0,1,2])
+	res = vs.inner_product([4,6,8], -100, 3, ids=[0,1,2])
 	print(res)
 
 

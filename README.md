@@ -24,7 +24,7 @@ Install Kite Vector Store,
 
 Default Schema in Kite:
 ```
-schema =  [('id', 'int64'), ('docid', 'string'), ('index', 'string'), ('embedding', 'float[]', 0, 0)]
+schema =  [('id', 'int64'), ('docid', 'string'), ('embedding', 'float[]', 0, 0)]
 ```
 
 Schema in PostgreSQL:
@@ -37,7 +37,6 @@ DROP FOREIGN TABLE IF EXISTS ai_ext;
 CREATE FOREIGN TABLE ai_ext (
 id bigint,
 docid text,
-index text,
 embedding vector(3)
 ) server kite_svr options (schema_name 'public', table_name 'vector/vector*.csv', fmt 'csv');
 ```
@@ -52,7 +51,6 @@ DROP EXTERNAL TABLE IF EXISTS ai_ext;
 CREATE FOREIGN TABLE ai_ext (
 id bigint,
 docid text,
-index text,
 embedding   vector(3)
 ) server kite_svr options (table_name 'vector/vector*.csv', fmt 'csv', mpp_execute 'multi servers');
 ```
@@ -76,10 +74,11 @@ To get the N-Best documents,
 	embedding = [4,6,8]
 	threshold = 0.8
 	nbest = 3
+	ids = [1,2,3]
 
 	vs = vector.KiteVector(hosts, path, csvspec)
 	try:
-		res = vs.inner_product(embedding, threshold, nbest)
+		res = vs.inner_product(embedding, threshold, nbest, ids=ids)
 		print(res)
 	except Exception as msg:
 		print(msg)

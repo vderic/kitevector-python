@@ -19,14 +19,14 @@ class KiteVector:
 		self.fragcnt = fragcnt
 		
 
-	def inner_product(self, embedding, threshold, nbest = 50, filter=None):
+	def inner_product(self, embedding, threshold, nbest = 50, ids=None):
 
 		embed = '{' + ",".join([str(item) for item in embedding]) + '}'
-		sql = '''select embedding <#> '{}', docid from "{}" where embedding <#> '{}' > {} '''.format(embed, self.path, embed, threshold)
+		sql = '''select embedding <#> '{}', id from "{}" where embedding <#> '{}' > {} '''.format(embed, self.path, embed, threshold)
 		#print(sql)
 
-		if filter is not None:
-			sql = sql + ' AND ' + 'id IN (' + ','.join([str(id) for id in filter]) + ')'
+		if ids is not None:
+			sql = sql + ' AND ' + 'id IN (' + ','.join([str(id) for id in ids]) + ')'
 
 		#columns = [c[0] for c in self.schema]
 		kitecli = kite.KiteClient()
