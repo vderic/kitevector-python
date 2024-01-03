@@ -6,7 +6,7 @@ from kite.xrg import xrg
 
 class KiteVector:
 
-	schema =  [('id', 'int64'), ('docid', 'string'), ('embedding', 'float[]', 0, 0)]
+	schema =  [('id', 'int64'), ('docid', 'int64'), ('embedding', 'float[]', 0, 0)]
 	path = None
 	filespec = None
 	hosts = None
@@ -19,14 +19,23 @@ class KiteVector:
 		self.fragcnt = fragcnt
 		
 
-	def inner_product(self, embedding, threshold, nbest = 50, ids=None):
+	def inner_product(self, embedding, threshold, nbest = 50, ids=None, docids=None):
 
 		embed = '{' + ",".join([str(item) for item in embedding]) + '}'
 		sql = '''select embedding <#> '{}', id from "{}" where embedding <#> '{}' > {} '''.format(embed, self.path, embed, threshold)
 		#print(sql)
 
-		if ids is not None:
-			sql = sql + ' AND ' + 'id IN (' + ','.join([str(id) for id in ids]) + ')'
+		if ids is not None and len(ids) > 0:
+			if len(ids) == 1:
+				sql = sql + ' AND ' + 'id = ' + str(id[0])
+			else:
+				sql = sql + ' AND ' + 'id IN (' + ','.join([str(id) for id in ids]) + ')'
+
+		if docids is not None and len(docids) > 0:
+			if len(docids) == 1:
+				sql = sql + ' AND ' + 'docid = ' + str(docids[0])
+			else:
+				sql = sql + ' AND ' + 'docid IN (' + ','.join([str(id) for docid in docids]) + ')'
 
 		#columns = [c[0] for c in self.schema]
 		kitecli = kite.KiteClient()
