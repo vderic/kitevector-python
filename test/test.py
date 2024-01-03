@@ -15,7 +15,6 @@ if __name__ == "__main__":
 	hosts = ['localhost:7878']
 	fragcnt = 3
 
-	vs = vector.KiteVector(hosts, path, csvspec, fragcnt)
 
 	try:
 		embedding = [4,6,8]
@@ -23,7 +22,20 @@ if __name__ == "__main__":
 		fragcnt = 3
 		index = None
 		nbest = 3
-		res = vs.inner_product(embedding, threshold, nbest, index)
+		ids = [1,2]
+		docids = [10,20]
+		filter = 'id IN (1,3)'
+
+		vs = vector.KiteVector(hosts, path, csvspec, fragcnt)
+		res = vs.inner_product(embedding, threshold, nbest, ids=ids)
+		print(res)
+
+		vs = vector.KiteVector(hosts, path, csvspec, fragcnt)
+		res = vs.inner_product(embedding, threshold, nbest, docids=docids)
+		print(res)
+
+		vs = vector.KiteVector(hosts, path, csvspec, fragcnt)
+		res = vs.inner_product(embedding, threshold, nbest, filter=filter)
 		print(res)
 	except Exception as msg:
 		print(msg)

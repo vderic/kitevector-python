@@ -13,7 +13,8 @@ if __name__ == "__main__":
 	vs = vector.KiteVector(hosts, path, filespec)
 
 	#res = vs.inner_product([4,6,8], -100, 3)
-	res = vs.inner_product([4,6,8], -100, 3, ids=[1,2], docids=[10])
+	res = vs.inner_product([4,6,8], -100, 3, ids=[1,2], docids=[10,20])
+	#res = vs.inner_product([4,6,8], -100, 3, filter='docid IN (10,30)')
 	print(res)
 
 

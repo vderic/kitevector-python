@@ -19,7 +19,7 @@ class KiteVector:
 		self.fragcnt = fragcnt
 		
 
-	def inner_product(self, embedding, threshold, nbest = 50, ids=None, docids=None):
+	def inner_product(self, embedding, threshold, nbest = 50, ids=None, docids=None, filter=None):
 
 		embed = '{' + ",".join([str(item) for item in embedding]) + '}'
 		sql = '''select embedding <#> '{}', id from "{}" where embedding <#> '{}' > {} '''.format(embed, self.path, embed, threshold)
@@ -35,7 +35,10 @@ class KiteVector:
 			if len(docids) == 1:
 				sql = sql + ' AND ' + 'docid = ' + str(docids[0])
 			else:
-				sql = sql + ' AND ' + 'docid IN (' + ','.join([str(id) for docid in docids]) + ')'
+				sql = sql + ' AND ' + 'docid IN (' + ','.join([str(docid) for docid in docids]) + ')'
+
+		if filter is not None:
+			sql = sql + ' AND ' + filter
 
 		#columns = [c[0] for c in self.schema]
 		kitecli = kite.KiteClient()
