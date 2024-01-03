@@ -24,7 +24,7 @@ Install Kite Vector Store,
 
 Default Schema in Kite:
 ```
-schema =  [('id', 'int64'), ('docid', 'string'), ('embedding', 'float[]', 0, 0)]
+schema =  [('id', 'int64'), ('docid', 'int64'), ('embedding', 'float[]', 0, 0)]
 ```
 
 Schema in PostgreSQL:
@@ -36,7 +36,7 @@ OPTIONS (host '127.0.0.1:7878', port '5432', dbname 'pgsql', fragcnt '3', extens
 DROP FOREIGN TABLE IF EXISTS ai_ext;
 CREATE FOREIGN TABLE ai_ext (
 id bigint,
-docid text,
+docid bigint,
 embedding vector(3)
 ) server kite_svr options (schema_name 'public', table_name 'vector/vector*.csv', fmt 'csv');
 ```
@@ -50,7 +50,7 @@ OPTIONS (host '127.0.0.1:7878', extensions 'vector');
 DROP EXTERNAL TABLE IF EXISTS ai_ext;
 CREATE FOREIGN TABLE ai_ext (
 id bigint,
-docid text,
+docid bigint,
 embedding   vector(3)
 ) server kite_svr options (table_name 'vector/vector*.csv', fmt 'csv', mpp_execute 'multi servers');
 ```
