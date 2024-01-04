@@ -24,10 +24,11 @@ if __name__ == "__main__":
 	path = 'tmp/vector/vector*.parquet'
 	filespec = kite.ParquetFileSpec()
 	hosts = ['localhost:7878']
+	schema =  [('id', 'int64'), ('docid', 'int64'), ('embedding', 'float[]', 0, 0)]
 
-	vs = vector.KiteVector(hosts, path, filespec)
+	vs = vector.KiteVector(schema, hosts, path, filespec)
 
-	ids, scores = vs.inner_product(gen_embedding(1536), -1, 3)
+	ids, scores = vs.inner_product(["embedding", gen_embedding(1536)], "id", -1, 3)
 	#res = vs.inner_product([4,6,8], -100, 3, ids=[1,2], docids=[10,20])
 	#res = vs.inner_product([4,6,8], -100, 3, filter='docid IN (10,30)')
 	print(ids)

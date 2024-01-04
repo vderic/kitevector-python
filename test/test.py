@@ -29,17 +29,19 @@ if __name__ == "__main__":
 	parquetspec = kite.ParquetFileSpec()
 	hosts = ['localhost:7878']
 	fragcnt = 3
+	schema =  [('id', 'int64'), ('docid', 'int64'), ('embedding', 'float[]', 0, 0)]
 
 
 	try:
-		embedding = gen_embedding(1536)
+		embedding = ["embedding", gen_embedding(1536)]
+		id_cname = "id"
 		threshold = -1
 		fragcnt = 3
 		index = None
 		nbest = 3
 
-		vs = vector.KiteVector(hosts, path, parquetspec, fragcnt)
-		ids, scores = vs.inner_product(embedding, threshold, nbest)
+		vs = vector.KiteVector(schema, hosts, path, parquetspec, fragcnt)
+		ids, scores = vs.inner_product(embedding, id_cname, threshold, nbest)
 		print(ids)
 		print(scores)
 
