@@ -20,7 +20,7 @@ class KiteVector:
 		self.fragcnt = fragcnt
 		
 
-	def inner_product(self, embedding, projection, threshold=-1, nbest = 50, filter=None):
+	def inner_product(self, embedding, projection, threshold=None, nbest = 50, filter=None):
 
 		embed_cname = embedding[0]
 		embed_data = embedding[1]
@@ -28,12 +28,19 @@ class KiteVector:
 		embed = '{' + ",".join([str(item) for item in embed_data]) + '}'
 		project = ','.join(projection)
 
-		sql = '''select {} <#> '{}', {} from "{}" where {} <#> '{}' > {} '''.format(embed_cname, embed, project, self.path, embed_cname, embed, threshold)
-		#print(sql)
+		sql = '''select {} <#> '{}', {} from "{}"'''.format(embed_cname, embed, project, self.path)
+
+		if threshold is not None or filter is not None:
+			sql += ' WHERE '
+
+		if threshold is not None:
+			sql += '''{} <#> '{}' > {}'''.format(embed_cname, embed, threshold)
+
 
 		if filter is not None:
-			sql = sql + ' AND ' + filter
+			sql += ' AND ' + filter
 
+		#print(sql)
 		#columns = [c[0] for c in self.schema]
 		kitecli = kite.KiteClient()
 		h = []
@@ -49,7 +56,7 @@ class KiteVector:
 				else:
 					#print("flag=", iter.flags, ", values=", iter.values)
 					#print(tuple(iter.values))
-					if len(h) <= nbest+1:
+					if len(h) <= nbest:
 						heapq.heappush(h, tuple(iter.values))
 					else:
 						heapq.heapreplace(h, tuple(iter.values))
