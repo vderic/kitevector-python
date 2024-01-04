@@ -37,8 +37,9 @@ if __name__ == "__main__":
 		nbest = 3
 
 		vs = vector.KiteVector(hosts, path, parquetspec, fragcnt)
-		res = vs.inner_product(embedding, threshold, nbest)
-		print(res)
+		ids, scores = vs.inner_product(embedding, threshold, nbest)
+		print(ids)
+		print(scores)
 
 		#ids = [1,2]
 		#vs = vector.KiteVector(hosts, path, parquetspec, fragcnt)
