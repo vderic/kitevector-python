@@ -25,7 +25,7 @@ if __name__ == "__main__":
 	path = 'tmp/vector/vector*.parquet'
 	filespec = kite.ParquetFileSpec()
 	hosts = ['localhost:7878']
-	schema =  [('id', 'int64'), ('docid', 'int64'), ('embedding', 'float[]', 0, 0)]
+	schema =  [('id', 'int64'), ('docid', 'int64'), ('embedding', 'float[]')]
 
 	vs = vector.KiteVector(schema, hosts, path, filespec)
 
