@@ -20,14 +20,12 @@ def gen_embedding(nitem):
 		ret[i] = ret[i] / sum
 	return ret
 
-def build_index(schema,hosts, filespec, path, dim):
+def build_index(schema,hosts, filespec, path):
 	sql = '''select id, embedding from "{}"'''.format(path)
-	num_elements = 10000
 
+	ids = []
+	embeddings = []
 	kitecli = kite.KiteClient()
-
-	p = hnswlib.Index(space = 'ip', dim = dim) # possible options are l2, cosine or ip
-	p.init_index(max_elements = num_elements, ef_construction = 200, M = 16)
 
 	try:
 
@@ -38,11 +36,10 @@ def build_index(schema,hosts, filespec, path, dim):
 			if iter is None:
 				break
 			else:
-				ids = iter.value_array[0]
-				embeddings = iter.value_array[1]
-				p.add_items(embeddings, ids)
+				ids.extend(iter.value_array[0])
+				embeddings.extend(iter.value_array[1])
 				
-		return p
+		return ids, np.float32(np.array(embeddings))
 
 	except Exception as msg:
 		print(msg)
@@ -61,21 +58,36 @@ if __name__ == "__main__":
 
 	random.seed(1)
 
-	p = build_index(schema, hosts, kite.ParquetFileSpec(), path, dim)
+	ids, embeddings = build_index(schema, hosts, kite.ParquetFileSpec(), path)
 
+	print(len(ids), " records loaded")
+
+	p = hnswlib.Index(space = 'ip', dim = dim) # possible options are l2, cosine or ip
+	p.init_index(max_elements = len(ids), ef_construction = 200, M = 16)
+
+	p.add_items(embeddings, ids)
 	# Controlling the recall by setting ef:
 	p.set_ef(50) # ef should always be > k
 
 	# Query dataset, k - number of the closest elements (returns 2 numpy arrays)
-	embedding = gen_embedding(dim)
-	labels, distances = p.knn_query(embedding, k = 20)
-	print(labels[0])
-	print(distances[0])
+	labels, distances = p.knn_query(embeddings, k = 1)
 
-	filter = ['id IN (' + ','.join([str(id) for id in labels[0]]) + ')']
+	recall = 0
+	for id, label in zip(ids, labels.reshape(-1)):
+		if id == label:
+			recall += 1
+
+	print("Recall for the batch: ", recall, "/", len(ids))
+
+	#print(labels[0])
+	#print(distances[0])
+
+	embed = gen_embedding(dim)
+	labels, distances = p.knn_query(embed, k = 10)
+	filter = ['id IN (' + ','.join([str(id) for id in labels.reshape(-1)]) + ')']
 
 	vs = vector.KiteVector(schema, hosts, path, kite.ParquetFileSpec(), 3)
-	rows, scores = vs.inner_product(["embedding", embedding], ['id', 'docid'], nbest=10, filter=filter)
+	rows, scores = vs.inner_product(["embedding", embed], ['id', 'docid'], nbest=10, filter=filter)
 
 	print(rows)
 	print(scores)
