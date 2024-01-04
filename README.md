@@ -71,15 +71,17 @@ To get the N-Best documents,
 	# use parquet as source file
 	parquetspec = kite.ParquetFileSpec()
 	hosts = ['localhost:7878']
-	embedding = [4,6,8]
+	schema =  [('id', 'int64'), ('docid', 'int64'), ('embedding', 'float[]', 0, 0)]
+	embedding = ["embedding", [4,6,8]]
+	id_cname = "id"
 	threshold = 0.8
 	nbest = 3
-	ids = [1,2,3]
 
-	vs = vector.KiteVector(hosts, path, csvspec)
+	vs = vector.KiteVector(schema, hosts, path, csvspec)
 	try:
-		res = vs.inner_product(embedding, threshold, nbest, ids=ids)
-		print(res)
+		ids, scores = vs.inner_product(embedding, id_cname, threshold, nbest)
+		print(ids)
+		print(scores)
 	except Exception as msg:
 		print(msg)
 ```
