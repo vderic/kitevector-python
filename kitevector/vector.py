@@ -20,7 +20,7 @@ class KiteVector:
 		self.fragcnt = fragcnt
 		
 
-	def inner_product(self, embedding, id_cname, threshold, nbest = 50, filter=None):
+	def inner_product(self, embedding, id_cname, threshold=-1, nbest = 50, filter=None):
 
 		embed_cname = embedding[0]
 		embed_data = embedding[1]
