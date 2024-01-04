@@ -39,7 +39,7 @@ def load(schema,hosts, filespec, path):
 				ids.extend(iter.value_array[0])
 				embeddings.extend(iter.value_array[1])
 				
-		return ids, np.float32(np.array(embeddings))
+		return ids, np.float32(embeddings)
 
 	except Exception as msg:
 		print(msg)
