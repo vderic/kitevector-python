@@ -73,14 +73,13 @@ To get the N-Best documents,
 	hosts = ['localhost:7878']
 	schema =  [('id', 'int64'), ('docid', 'int64'), ('embedding', 'float[]', 0, 0)]
 	embedding = ["embedding", [4,6,8]]
-	id_cname = "id"
 	threshold = 0.8
 	nbest = 3
 
 	vs = vector.KiteVector(schema, hosts, path, csvspec)
 	try:
-		ids, scores = vs.inner_product(embedding, id_cname, threshold, nbest)
-		print(ids)
+		cols, scores = vs.inner_product(embedding, ['id', 'docid'], threshold, nbest)
+		print(cols)
 		print(scores)
 	except Exception as msg:
 		print(msg)
