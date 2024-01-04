@@ -29,7 +29,8 @@ if __name__ == "__main__":
 
 	vs = vector.KiteVector(schema, hosts, path, filespec)
 
-	cols, scores = vs.inner_product(["embedding", gen_embedding(1536)], ['id', 'docid'], threshold=-1, nbest=3)
+	cols, scores = vs.inner_product(["embedding", gen_embedding(1536)], ['id', 'docid'], threshold=-1, nbest=3, filter=['id IN (999, 4833)'])
+	#cols, scores = vs.inner_product(["embedding", gen_embedding(1536)], ['id', 'docid'], threshold=-1, nbest=3)
 	#cols, scores = vs.inner_product(["embedding", gen_embedding(1536)], ['id', 'docid'], nbest=3)
 	print(cols)
 	print(scores)

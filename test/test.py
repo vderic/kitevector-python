@@ -46,7 +46,7 @@ if __name__ == "__main__":
 		print(cols)
 		print(scores)
 
-		filter = 'id IN (999, 4833)'
+		filter = ['id IN (999, 4833)']
 		vs = vector.KiteVector(schema, hosts, path, parquetspec, fragcnt)
 		cols, scores = vs.inner_product(embedding, ['id', 'docid'], threshold=threshold, nbest=nbest, filter=filter)
 		print(cols)

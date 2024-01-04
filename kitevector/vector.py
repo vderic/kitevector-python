@@ -30,18 +30,18 @@ class KiteVector:
 
 		sql = '''select {} <#> '{}', {} from "{}"'''.format(embed_cname, embed, project, self.path)
 
-		if threshold is not None or filter is not None:
-			sql += ' WHERE '
-
+		filters = []
 		if threshold is not None:
-			sql += '''{} <#> '{}' > {}'''.format(embed_cname, embed, threshold)
-
+			filters.append('''{} <#> '{}' > {}'''.format(embed_cname, embed, threshold))
 
 		if filter is not None:
-			sql += ' AND ' + filter
+			filters.extend(filter)
+
+		if len(filters) > 0:
+			sql += ' WHERE '
+			sql += ' AND '.join(filters)
 
 		#print(sql)
-		#columns = [c[0] for c in self.schema]
 		kitecli = kite.KiteClient()
 		h = []
 		try:
