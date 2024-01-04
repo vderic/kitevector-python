@@ -20,7 +20,7 @@ def gen_embedding(nitem):
 		ret[i] = ret[i] / sum
 	return ret
 
-def build_index(schema,hosts, filespec, path):
+def load(schema,hosts, filespec, path):
 	sql = '''select id, embedding from "{}"'''.format(path)
 
 	ids = []
@@ -58,7 +58,7 @@ if __name__ == "__main__":
 
 	random.seed(1)
 
-	ids, embeddings = build_index(schema, hosts, kite.ParquetFileSpec(), path)
+	ids, embeddings = load(schema, hosts, kite.ParquetFileSpec(), path)
 
 	print(len(ids), " records loaded")
 
