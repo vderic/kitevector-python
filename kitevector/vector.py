@@ -20,14 +20,15 @@ class KiteVector:
 		self.fragcnt = fragcnt
 		
 
-	def inner_product(self, embedding, id_cname, threshold=-1, nbest = 50, filter=None):
+	def inner_product(self, embedding, projection, threshold=-1, nbest = 50, filter=None):
 
 		embed_cname = embedding[0]
 		embed_data = embedding[1]
 
 		embed = '{' + ",".join([str(item) for item in embed_data]) + '}'
+		project = ','.join(projection)
 
-		sql = '''select {} <#> '{}', {} from "{}" where {} <#> '{}' > {} '''.format(embed_cname, embed, id_cname, self.path, embed_cname, embed, threshold)
+		sql = '''select {} <#> '{}', {} from "{}" where {} <#> '{}' > {} '''.format(embed_cname, embed, project, self.path, embed_cname, embed, threshold)
 		#print(sql)
 
 		if filter is not None:
@@ -57,16 +58,17 @@ class KiteVector:
 			if len(h) == nbest+1:
 				heapq.heappop(h)
 
-			ids = []
+
 			scores = []
+			cols = []
 			for i in range(len(h)):
 				if i < nbest:
 					t = heapq.heappop(h)
-					ids.append(t[1])
 					scores.append(t[0])
+					cols.append(t[1:])
 
 
-			return ids, scores
+			return cols, scores
 
 		except OSError as msg:
 			print(msg)
