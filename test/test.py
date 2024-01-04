@@ -31,7 +31,7 @@ if __name__ == "__main__":
 	parquetspec = kite.ParquetFileSpec()
 	hosts = ['localhost:7878']
 	fragcnt = 3
-	schema =  [('id', 'int64'), ('docid', 'int64'), ('embedding', 'float[]', 0, 0)]
+	schema =  [('id', 'int64'), ('docid', 'int64'), ('embedding', 'float[]')]
 
 
 	try:
