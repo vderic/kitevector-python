@@ -1,5 +1,6 @@
 import sys
 import random
+import math
 from kite import kite
 from kite.xrg import xrg
 
@@ -8,10 +9,11 @@ import vector
 def gen_embedding(nitem):
 	ret = []
 	for x in range(nitem):
-		ret.append(random.random())
+		ret.append(random.uniform(-1,1))
 	sum = 0
 	for x in ret:
-		sum += x
+		sum += x*x
+	sum = math.sqrt(sum)
 	# normalize
 	for i in range(len(ret)):
 		ret[i] = ret[i] / sum
