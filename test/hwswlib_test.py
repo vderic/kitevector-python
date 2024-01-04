@@ -84,10 +84,12 @@ if __name__ == "__main__":
 
 	embed = gen_embedding(dim)
 	labels, distances = p.knn_query(embed, k = 10)
-	filter = ['id IN (' + ','.join([str(id) for id in labels.reshape(-1)]) + ')']
+	filter = 'id IN (' + ','.join([str(id) for id in labels.reshape(-1)]) + ')'
 
 	vs = vector.KiteVector(schema, hosts, path, kite.ParquetFileSpec(), 3)
-	rows, scores = vs.inner_product(["embedding", embed], ['id', 'docid'], nbest=10, filter=filter)
+	vs.select(['id', 'docid']).order_by(vector.Embedding('embedding').inner_product(embed))
+	vs.filter(vector.Expr(filter)).limit(6)
+	rows, scores = vs.do()
 
 	print(rows)
 	print(scores)

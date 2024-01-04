@@ -35,21 +35,16 @@ if __name__ == "__main__":
 
 
 	try:
-		embedding = ["embedding", gen_embedding(1536)]
+		embedding = gen_embedding(1536)
 		threshold = 0.02
 		fragcnt = 3
 		index = None
 		nbest = 3
 
 		vs = vector.KiteVector(schema, hosts, path, parquetspec, fragcnt)
-		cols, scores = vs.inner_product(embedding, ['id', 'docid'], nbest=nbest)
-		print(cols)
-		print(scores)
-
-		filter = ['id IN (999, 4833)']
-		vs = vector.KiteVector(schema, hosts, path, parquetspec, fragcnt)
-		cols, scores = vs.inner_product(embedding, ['id', 'docid'], threshold=threshold, nbest=nbest, filter=filter)
-		print(cols)
+		vs.select(['id', 'docid']).order_by(vector.Embedding('embedding').inner_product(embedding))
+		rows, scores = vs.filter(vector.Expr('id IN (999, 4833)')).limit(nbest).do()
+		print(rows)
 		print(scores)
 	except Exception as msg:
 		print(msg)
