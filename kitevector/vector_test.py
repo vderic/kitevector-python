@@ -28,11 +28,9 @@ if __name__ == "__main__":
 	schema =  [('id', 'int64'), ('docid', 'int64'), ('embedding', 'float[]')]
 
 	vs = vector.KiteVector(schema, hosts, path, filespec)
-
-	cols, scores = vs.inner_product(["embedding", gen_embedding(1536)], ['id', 'docid'], threshold=-1, nbest=3, filter=['id IN (999, 4833)'])
-	#cols, scores = vs.inner_product(["embedding", gen_embedding(1536)], ['id', 'docid'], threshold=-1, nbest=3)
-	#cols, scores = vs.inner_product(["embedding", gen_embedding(1536)], ['id', 'docid'], nbest=3)
-	print(cols)
+	embed = gen_embedding(1536)
+	vs.select(['id', 'docid']).order_by(vector.Embedding("embedding").inner_product(embed))
+	vs.filter(vector.Embedding("embedding").inner_product(embed).gt(0.07)).limit(5)
+	rows, scores = vs.do()
+	print(rows)
 	print(scores)
-
-
