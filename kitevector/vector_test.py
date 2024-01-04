@@ -21,6 +21,7 @@ def gen_embedding(nitem):
 
 if __name__ == "__main__":
 
+	random.seed(1)
 	path = 'tmp/vector/vector*.parquet'
 	filespec = kite.ParquetFileSpec()
 	hosts = ['localhost:7878']

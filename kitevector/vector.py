@@ -48,17 +48,21 @@ class KiteVector:
 				else:
 					#print("flag=", iter.flags, ", values=", iter.values)
 					#print(tuple(iter.values))
-					if len(h) <= nbest:
+					if len(h) <= nbest+1:
 						heapq.heappush(h, tuple(iter.values))
 					else:
 						heapq.heapreplace(h, tuple(iter.values))
 
+			# skip the first item
+			heapq.heappop(h)
+
 			ids = []
 			scores = []
 			for i in range(len(h)):
-				t = heapq.heappop(h)
-				ids.append(t[1])
-				scores.append(t[0])
+				if i < nbest:
+					t = heapq.heappop(h)
+					ids.append(t[1])
+					scores.append(t[0])
 
 
 			return ids, scores
