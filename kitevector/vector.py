@@ -54,7 +54,8 @@ class KiteVector:
 						heapq.heapreplace(h, tuple(iter.values))
 
 			# skip the first item
-			heapq.heappop(h)
+			if len(h) == nbest+1:
+				heapq.heappop(h)
 
 			ids = []
 			scores = []

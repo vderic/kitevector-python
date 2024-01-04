@@ -37,7 +37,7 @@ if __name__ == "__main__":
 	try:
 		embedding = ["embedding", gen_embedding(1536)]
 		id_cname = "id"
-		threshold = -1
+		threshold = 0.02
 		fragcnt = 3
 		index = None
 		nbest = 3
