@@ -42,13 +42,13 @@ if __name__ == "__main__":
 		nbest = 3
 
 		vs = vector.KiteVector(schema, hosts, path, parquetspec, fragcnt)
-		cols, scores = vs.inner_product(embedding, ['id', 'docid'], threshold, nbest)
+		cols, scores = vs.inner_product(embedding, ['id', 'docid'], nbest=nbest)
 		print(cols)
 		print(scores)
 
 		filter = 'id IN (999, 4833)'
 		vs = vector.KiteVector(schema, hosts, path, parquetspec, fragcnt)
-		cols, scores = vs.inner_product(embedding, ['id', 'docid'], threshold, nbest, filter=filter)
+		cols, scores = vs.inner_product(embedding, ['id', 'docid'], threshold=threshold, nbest=nbest, filter=filter)
 		print(cols)
 		print(scores)
 	except Exception as msg:
