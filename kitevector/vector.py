@@ -60,13 +60,15 @@ class KiteVector:
 					else:
 						heapq.heapreplace(h, tuple(iter.values))
 
-			res = []
+			ids = []
+			scores = []
 			for i in range(len(h)):
 				t = heapq.heappop(h)
-				res.append(t[1])
+				ids.append(t[1])
+				scores.append(t[0])
 
 
-			return res
+			return ids, scores
 
 		except OSError as msg:
 			print(msg)
