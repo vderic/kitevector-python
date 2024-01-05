@@ -83,12 +83,12 @@ To get the N-Best documents,
 		print(msg)
 ```
 
-You can also generate the SQL in postgres to run with your favorite postgres client,
+You can also generate the SQL and run with your favorite postgres client,
 
 ```
 	embedding = gen_embedding(1536)   # open AI embedding
 	nbest = 3
-	table = 'embedding_table'
+	table = 'ai_ext'
 
 	try:
 		vs = kv.PgVector()
