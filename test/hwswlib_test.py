@@ -86,10 +86,10 @@ if __name__ == "__main__":
 	labels, distances = p.knn_query(embed, k = 10)
 	filter = 'id IN (' + ','.join([str(id) for id in labels.reshape(-1)]) + ')'
 
-	vs = vector.KiteVector(schema, hosts, path, kite.ParquetFileSpec(), 3)
-	vs.select(['id', 'docid']).order_by(vector.Embedding('embedding').inner_product(embed))
+	vs = vector.KiteVector(schema, hosts, 3)
+	vs.format(kite.ParquetFileSpec()).table(path).select(['id', 'docid']).order_by(vector.Embedding('embedding').inner_product(embed))
 	vs.filter(vector.Expr(filter)).limit(6)
-	rows, scores = vs.do()
+	rows, scores = vs.execute()
 
 	print(rows)
 	print(scores)
