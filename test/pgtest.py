@@ -24,6 +24,7 @@ if __name__ == "__main__":
 	random.seed(1)
 	path = 'ext_ai'
 
+	# generate SQL for Kite
 	vs = vector.PgVector()
 	embed = gen_embedding(1536)
 	vs.select(['id', 'docid']).table(path).order_by(vector.Embedding("embedding").inner_product(embed))
@@ -31,6 +32,7 @@ if __name__ == "__main__":
 	sql = vs.sql()
 	print(sql)
 
+	# genarte SQL for Postgres:  SELECT id, docid from path WHERE id IN (1,2,3) AND id > 0.7 ORDER BY docid LIMIT 6
 	vs1 = vector.PgVector()
 	vs1.select(['id', 'docid']).table(path).order_by(vector.Expr("docid"))
 	vs1.filter(vector.ScalarArrayOpExpr("id", [1,2,3])).filter(vector.OpExpr('>', 'id', 0.7)).limit(5)
