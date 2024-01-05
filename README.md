@@ -66,20 +66,18 @@ To get the N-Best documents,
 
 ```
 	path = 'vector/vector*.csv'
-	# use csv as source file
-	csvspec = kite.CsvFileSpec()
 	# use parquet as source file
 	parquetspec = kite.ParquetFileSpec()
 	hosts = ['localhost:7878']
 	schema =  [('id', 'int64'), ('docid', 'int64'), ('embedding', 'float[]', 0, 0)]
-	embedding = ["embedding", [4,6,8]]
-	threshold = 0.8
+	embedding = gen_embedding(1536)   # open AI embedding
 	nbest = 3
 
-	vs = vector.KiteVector(schema, hosts, path, csvspec)
 	try:
-		cols, scores = vs.inner_product(embedding, ['id', 'docid'], threshold, nbest)
-		print(cols)
+		vs = kv.KiteVector(schema, hosts, fragcnt)
+		vs.format(parquetspec).table(path).select(['id', 'docid']).order_by(kv.VectorExpr('embedding').inner_product(embedding))
+		rows, scores = vs.filter(kv.ScalarArrayOpExpr('id', [999, 4833])).limit(nbest).execute()
+		print(rows)
 		print(scores)
 	except Exception as msg:
 		print(msg)
