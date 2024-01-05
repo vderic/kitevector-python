@@ -6,23 +6,22 @@ from kite.xrg import xrg
 
 class Expr:
 
-	expr = None
-
 	def __init__(self, expr):
 		self.expr = expr
 		
 	def __str__(self):
 		return self.expr
 
+	def sql(self):
+		return self.expr
+
 class Embedding(Expr):
 	
-	cname = None
-	embedding = None
-	operator = None
-	gtval = None
-
 	def __init__(self, cname):
 		self.cname = cname
+		self.embedding = None
+		self.operator = None
+		self.gtval = None
 	
 	def inner_product(self, embedding):
 		self.embedding = embedding
@@ -40,48 +39,110 @@ class Embedding(Expr):
 			ret += ' > {}'.format(self.gtval)
 		return ret
 
+	def sql(self):
+		value = '[' + ','.join([str(e) for e in self.embedding]) + ']'
+		ret = "{} {} '{}'".format(self.cname, self.operator, value)
+		if self.gtval is not None:
+			ret += ' > {}'.format(self.gtval)
+		return ret
 
-class KiteVector:
+class ScalarArrayOpExpr(Expr):
 
-	schema =  None
-	path = None
-	filespec = None
-	hosts = None
-	fragcnt = 0
+	def __init__(self, left, right):
+		self.left = left
+		self.right = right
 
-	projection = None
-	order_by = None
-	filters = []
-	limit = None
+	def __str__(self):
+		ret = '''{} IN ({})'''.format(self.left, ','.join([str(e) for e in self.right]))
+		return ret
 
-	def __init__(self, schema, hosts, path, filespec, fragcnt = 3):
-		self.path = path
-		self.schema = schema
-		self.filespec = filespec
-		self.hosts = hosts
-		self.fragcnt = fragcnt
-		
+	def sql(self):
+		return self.__str__()
+
+class OpExpr(Expr):
+
+	def __init__(self, op, left, right):
+		self.op = op
+		self.left = left
+		self.right = right
+
+	def __str__(self):
+		ret = '''{} {} {}'''.format(str(self.left), self.op, str(self.right))
+		return ret
+
+	def sql(self):
+		return self.__str__()
+
+
+class BaseVector:
+
+	def __init__(self):
+		self.projection = None
+		self.orderby = None
+		self.filters = []
+		self.nlimit = None
+		self.path = None
+		self.filespec = None
+
 	def select(self, projection):
 		self.projection = projection
 		return self
 
 	def order_by(self, expr):
-		self.order_by = expr
+		self.orderby = expr
 
 		return self
 
 	def limit(self, limit):
-		self.limit = limit
+		self.nlimit = limit
 		return self
 
 	def filter(self, expr):
 		self.filters.append(expr)
 		return self
 
-	def do(self):
+	def table(self, path):
+		self.path = path
+		return self
+	
+	def format(self, filespec):
+		self.filespec = filespec
+		return self
+
+class PgVector(BaseVector):
+
+	def __init__(self, host):
+		super().__init__()
+		self.host = host
+
+	def sql(self):
+		sql = '''SELECT {} FROM "{}"'''.format(','.join(self.projection), self.path)
+
+		if self.filters is not None and len(self.filters) > 0:
+			sql += ' WHERE '
+			sql += ' AND '.join([f.sql() for f in self.filters])
+			
+		if self.orderby is not None:
+			sql += ' ORDER BY ' + self.orderby.sql()
+
+		if self.nlimit is not None:
+			sql += ' LIMIT {}'.format(self.nlimit)
+		return sql
+
+
+	
+class KiteVector(BaseVector):
+
+	def __init__(self, schema, hosts, fragcnt = 3):
+		super().__init__()
+		self.schema = schema
+		self.hosts = hosts
+		self.fragcnt = fragcnt
+		
+	def sql(self):
 		project = []
-		if self.order_by is not None:
-			project.append(str(self.order_by))
+		if self.orderby is not None:
+			project.append(str(self.orderby))
 
 		if self.projection is not None and len(self.projection) > 0:
 			project.extend(self.projection)
@@ -94,9 +155,13 @@ class KiteVector:
 			
 		#print(sql)
 
-		if self.order_by is None or self.limit is None:
+		if self.orderby is None or self.nlimit is None:
 			raise ValueError("ORDER BY or LIMIT is absent")
 
+		return sql
+
+	def execute(self):
+		sql = self.sql()
 		return self.sort(sql)
 
 	def sort(self, sql):
@@ -114,13 +179,13 @@ class KiteVector:
 				else:
 					#print("flag=", iter.flags, ", values=", iter.values)
 					#print(tuple(iter.values))
-					if len(h) <= self.limit:
+					if len(h) <= self.nlimit:
 						heapq.heappush(h, tuple(iter.values))
 					else:
 						heapq.heapreplace(h, tuple(iter.values))
 
 			# skip the first item
-			if len(h) == self.limit+1:
+			if len(h) == self.nlimit+1:
 				heapq.heappop(h)
 
 

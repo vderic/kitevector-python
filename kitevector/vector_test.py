@@ -27,10 +27,10 @@ if __name__ == "__main__":
 	hosts = ['localhost:7878']
 	schema =  [('id', 'int64'), ('docid', 'int64'), ('embedding', 'float[]')]
 
-	vs = vector.KiteVector(schema, hosts, path, filespec)
+	vs = vector.KiteVector(schema, hosts, 3)
 	embed = gen_embedding(1536)
-	vs.select(['id', 'docid']).order_by(vector.Embedding("embedding").inner_product(embed))
+	vs.format(filespec).select(['id', 'docid']).table(path).order_by(vector.Embedding("embedding").inner_product(embed))
 	vs.filter(vector.Embedding("embedding").inner_product(embed).gt(0.07)).limit(5)
-	rows, scores = vs.do()
+	rows, scores = vs.execute()
 	print(rows)
 	print(scores)
