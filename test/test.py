@@ -43,7 +43,7 @@ if __name__ == "__main__":
 
 		vs = vector.KiteVector(schema, hosts, fragcnt)
 		vs.format(parquetspec).table(path).select(['id', 'docid']).order_by(vector.Embedding('embedding').inner_product(embedding))
-		rows, scores = vs.filter(vector.Expr('id IN (999, 4833)')).limit(nbest).execute()
+		rows, scores = vs.filter(vector.ScalarArrayOpExpr('id', [999, 4833])).limit(nbest).execute()
 		print(rows)
 		print(scores)
 	except Exception as msg:

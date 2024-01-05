@@ -28,7 +28,7 @@ if __name__ == "__main__":
 	vs = vector.PgVector()
 	embed = gen_embedding(1536)
 	vs.select(['id', 'docid']).table(path).order_by(vector.Embedding("embedding").inner_product(embed))
-	vs.filter(vector.Embedding("embedding").inner_product(embed).gt(0.07)).limit(5)
+	vs.filter(vector.OpExpr('>', vector.Embedding("embedding").inner_product(embed), 0.07)).limit(5)
 	sql = vs.sql()
 	print(sql)
 

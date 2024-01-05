@@ -21,29 +21,20 @@ class Embedding(Expr):
 		self.cname = cname
 		self.embedding = None
 		self.operator = None
-		self.gtval = None
 	
 	def inner_product(self, embedding):
 		self.embedding = embedding
 		self.operator = '<#>'
 		return self
 
-	def gt(self, threshold):
-		self.gtval = threshold
-		return self
-		
 	def __str__(self):
 		value = '{' + ','.join([str(e) for e in self.embedding]) + '}'
 		ret = "{} {} '{}'".format(self.cname, self.operator, value)
-		if self.gtval is not None:
-			ret += ' > {}'.format(self.gtval)
 		return ret
 
 	def sql(self):
 		value = '[' + ','.join([str(e) for e in self.embedding]) + ']'
 		ret = "{} {} '{}'".format(self.cname, self.operator, value)
-		if self.gtval is not None:
-			ret += ' > {}'.format(self.gtval)
 		return ret
 
 class ScalarArrayOpExpr(Expr):
@@ -71,7 +62,20 @@ class OpExpr(Expr):
 		return ret
 
 	def sql(self):
-		return self.__str__()
+		leftsql = None
+		if isinstance(self.left, Expr):
+			leftsql = self.left.sql()
+		else:
+			leftsql = str(self.left)
+
+		rightsql = None
+		if isinstance(self.right, Expr):
+			rigthsql = self.right.sql()
+		else:
+			rightsql = str(self.right)
+
+		ret = '''{} {} {}'''.format(leftsql, self.op, rightsql)
+		return ret
 
 
 class BaseVector:
