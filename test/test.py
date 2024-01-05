@@ -7,7 +7,7 @@ import pandas as pd
 
 from kite import kite
 from kite.xrg import xrg
-from kitevector import vector
+from kitevector import vector as kv
 
 def gen_embedding(nitem):
 	ret = []
@@ -41,9 +41,9 @@ if __name__ == "__main__":
 		index = None
 		nbest = 3
 
-		vs = vector.KiteVector(schema, hosts, fragcnt)
-		vs.format(parquetspec).table(path).select(['id', 'docid']).order_by(vector.Embedding('embedding').inner_product(embedding))
-		rows, scores = vs.filter(vector.ScalarArrayOpExpr('id', [999, 4833])).limit(nbest).execute()
+		vs = kv.KiteVector(schema, hosts, fragcnt)
+		vs.format(parquetspec).table(path).select(['id', 'docid']).order_by(kv.VectorExpr('embedding').inner_product(embedding))
+		rows, scores = vs.filter(kv.ScalarArrayOpExpr('id', [999, 4833])).limit(nbest).execute()
 		print(rows)
 		print(scores)
 	except Exception as msg:

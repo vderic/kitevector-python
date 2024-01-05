@@ -4,7 +4,7 @@ import math
 from kite import kite
 from kite.xrg import xrg
 
-import vector
+import vector as kv
 
 def gen_embedding(nitem):
 	ret = []
@@ -24,15 +24,16 @@ if __name__ == "__main__":
 	random.seed(1)
 	path = 'ext_ai'
 
-	vs = vector.PgVector()
+	vs = kv.PgVector()
 	embed = gen_embedding(1536)
-	vs.select(['id', 'docid']).table(path).order_by(vector.Embedding("embedding").inner_product(embed))
-	vs.filter(vector.OpExpr('>', vector.Embedding("embedding").inner_product(embed), 0.07)).limit(5)
+	#vs.select(['id', 'docid']).table(path).order_by(vector.Embedding("embedding").inner_product(embed))
+	vs.select(['id', 'docid']).table(path)
+	vs.filter(kv.OpExpr('>', kv.VectorExpr("embedding").inner_product(embed), 0.07)).limit(5)
 	sql = vs.sql()
 	print(sql)
 
-	vs1 = vector.PgVector()
-	vs1.select(['id', 'docid']).table(path).order_by(vector.Expr("docid"))
-	vs1.filter(vector.ScalarArrayOpExpr("id", [1,2,3])).filter(vector.OpExpr('>', 'id', 0.7)).limit(5)
+	vs1 = kv.PgVector()
+	vs1.select(['id', 'docid']).table(path).order_by(kv.Expr("docid"))
+	vs1.filter(kv.ScalarArrayOpExpr("id", [1,2,3])).filter(kv.OpExpr('>', 'id', 0.7)).limit(5)
 	sql = vs1.sql()
 	print(sql)

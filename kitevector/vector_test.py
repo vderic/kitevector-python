@@ -4,7 +4,7 @@ import math
 from kite import kite
 from kite.xrg import xrg
 
-import vector
+import vector as kv
 
 def gen_embedding(nitem):
 	ret = []
@@ -27,10 +27,11 @@ if __name__ == "__main__":
 	hosts = ['localhost:7878']
 	schema =  [('id', 'int64'), ('docid', 'int64'), ('embedding', 'float[]')]
 
-	vs = vector.KiteVector(schema, hosts, 3)
+	vs = kv.KiteVector(schema, hosts, 3)
 	embed = gen_embedding(1536)
-	vs.format(filespec).select(['id', 'docid']).table(path).order_by(vector.Embedding("embedding").inner_product(embed))
-	vs.filter(vector.OpExpr('>', vector.Embedding("embedding").inner_product(embed), 0.07)).limit(5)
+	vs.format(filespec).select(['id', 'docid']).table(path).order_by(kv.VectorExpr("embedding").inner_product(embed))
+	vs.filter(kv.OpExpr('>', kv.VectorExpr("embedding").inner_product(embed), 0.07)).limit(5)
+	#print(vs.sql())
 	rows, scores = vs.execute()
 	print(rows)
 	print(scores)

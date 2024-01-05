@@ -1,5 +1,6 @@
 import sys
 import heapq
+import numpy as np
 
 from kite import kite
 from kite.xrg import xrg
@@ -15,27 +16,29 @@ class Expr:
 	def sql(self):
 		return self.expr
 
-class Embedding(Expr):
-	
+class VectorExpr(Expr):
 	def __init__(self, cname):
 		self.cname = cname
-		self.embedding = None
-		self.operator = None
-	
+
 	def inner_product(self, embedding):
-		self.embedding = embedding
-		self.operator = '<#>'
-		return self
+		return OpExpr('<#>', self, Embedding(embedding))
 
 	def __str__(self):
-		value = '{' + ','.join([str(e) for e in self.embedding]) + '}'
-		ret = "{} {} '{}'".format(self.cname, self.operator, value)
-		return ret
+		return self.cname
 
 	def sql(self):
-		value = '[' + ','.join([str(e) for e in self.embedding]) + ']'
-		ret = "{} {} '{}'".format(self.cname, self.operator, value)
-		return ret
+		return self.__str__()
+
+class Embedding(Expr):
+	
+	def __init__(self, embedding):
+		self.embedding = embedding
+	
+	def __str__(self):
+		return '\'{' + ','.join([str(e) for e in self.embedding]) + '}\''
+
+	def sql(self):
+		return '\'[' + ','.join([str(e) for e in self.embedding]) + ']\''
 
 class ScalarArrayOpExpr(Expr):
 
@@ -58,19 +61,39 @@ class OpExpr(Expr):
 		self.right = right
 
 	def __str__(self):
-		ret = '''{} {} {}'''.format(str(self.left), self.op, str(self.right))
+		leftsql = None
+		if isinstance(self.left, Expr):
+			leftsql = str(self.left)
+		elif isinstance(self.left, list) or isinstance(self.left, np.ndarray):
+			leftsql = '\'{' + ','.join([str(e) for e in self.left]) + '}\''
+		else:
+			leftsql = str(self.left)
+
+		rightsql = None
+		if isinstance(self.right, Expr):
+			rightsql = str(self.right)
+		elif isinstance(self.right, list) or isinstance(self.right, np.ndarray):
+			rightsql = '\'{' + ','.join([str(e) for e in self.right]) + '}\''
+		else:
+			rightsql = str(self.right)
+
+		ret = '''{} {} {}'''.format(leftsql, self.op, rightsql)
 		return ret
 
 	def sql(self):
 		leftsql = None
 		if isinstance(self.left, Expr):
 			leftsql = self.left.sql()
+		elif isinstance(self.left, list) or isinstance(self.left, np.ndarray):
+			leftsql = '\'{' + ','.join([str(e) for e in self.left]) + '}\''
 		else:
 			leftsql = str(self.left)
 
 		rightsql = None
 		if isinstance(self.right, Expr):
-			rigthsql = self.right.sql()
+			rightsql = self.right.sql()
+		elif isinstance(self.right, list) or isinstance(self.right, np.ndarray):
+			rightsql = '\'{' + ','.join([str(e) for e in self.right]) + '}\''
 		else:
 			rightsql = str(self.right)
 
