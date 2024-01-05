@@ -33,7 +33,7 @@ if __name__ == "__main__":
 	print(sql)
 
 	vs1 = kv.PgVector()
-	vs1.select(['id', 'docid']).table(path).order_by(kv.Expr("docid"))
+	vs1.select([kv.Var('id'), kv.OpExpr('-', 'docid', 6)]).table(path).order_by(kv.Var("docid"))
 	vs1.filter(kv.ScalarArrayOpExpr("id", [1,2,3])).filter(kv.OpExpr('>', 'id', 0.7)).limit(5)
 	sql = vs1.sql()
 	print(sql)

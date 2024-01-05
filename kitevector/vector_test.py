@@ -29,7 +29,7 @@ if __name__ == "__main__":
 
 	vs = kv.KiteVector(schema, hosts, 3)
 	embed = gen_embedding(1536)
-	vs.format(filespec).select(['id', 'docid']).table(path).order_by(kv.VectorExpr("embedding").inner_product(embed))
+	vs.format(filespec).select([kv.Var('id'), kv.OpExpr('+', 'docid', 2)]).table(path).order_by(kv.VectorExpr("embedding").inner_product(embed))
 	vs.filter(kv.OpExpr('>', kv.VectorExpr("embedding").inner_product(embed), 0.07)).limit(5)
 	#print(vs.sql())
 	rows, scores = vs.execute()

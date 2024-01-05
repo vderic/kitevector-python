@@ -16,6 +16,16 @@ class Expr:
 	def sql(self):
 		return self.expr
 
+class Var(Expr):
+	def __init__(self, cname):
+		self.cname = cname
+
+	def __str__(self):
+		return self.cname
+
+	def sql(self):
+		return self.cname
+
 class VectorExpr(Expr):
 	def __init__(self, cname):
 		self.cname = cname
@@ -142,7 +152,7 @@ class PgVector(BaseVector):
 		super().__init__()
 
 	def sql(self):
-		sql = '''SELECT {} FROM "{}"'''.format(','.join(self.projection), self.path)
+		sql = '''SELECT {} FROM "{}"'''.format(','.join([c.sql() if isinstance(c, Expr) else c for c in self.projection]), self.path)
 
 		if self.filters is not None and len(self.filters) > 0:
 			sql += ' WHERE '
@@ -168,12 +178,12 @@ class KiteVector(BaseVector):
 	def sql(self):
 		project = []
 		if self.orderby is not None:
-			project.append(str(self.orderby))
+			project.append(self.orderby)
 
 		if self.projection is not None and len(self.projection) > 0:
 			project.extend(self.projection)
 
-		sql = '''SELECT {} FROM "{}"'''.format(','.join(project), self.path)
+		sql = '''SELECT {} FROM "{}"'''.format(','.join([str(c) if isinstance(c, Expr) else c for c in project]), self.path)
 
 		if self.filters is not None and len(self.filters) > 0:
 			sql += ' WHERE '
