@@ -33,6 +33,12 @@ class VectorExpr(Expr):
 	def inner_product(self, embedding):
 		return OpExpr('<#>', self, Embedding(embedding))
 
+	def l2_distance(self, embedding):
+		return OpExpr('<->', self, Embedding(embedding))
+
+	def cosine_distance(self, embedding):
+		return OpExpr('<=>', self, Embedding(embedding))
+
 	def __str__(self):
 		return self.cname
 
