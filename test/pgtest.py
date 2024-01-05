@@ -34,7 +34,7 @@ if __name__ == "__main__":
 
 	# genarte SQL for Postgres:  SELECT id, docid from path WHERE id IN (1,2,3) AND id > 0.7 ORDER BY docid LIMIT 6
 	vs1 = kv.PgVector()
-	vs1.select(['id', 'docid']).table(path).order_by(kv.Expr("docid"))
+	vs1.select([kv.Var('id'), kv.OpExpr('+', 'docid', 2)]).table(path).order_by(kv.Var("docid"))
 	vs1.filter(kv.ScalarArrayOpExpr("id", [1,2,3])).filter(kv.OpExpr('>', 'id', 0.7)).limit(5)
 	sql = vs1.sql()
 	print(sql)
