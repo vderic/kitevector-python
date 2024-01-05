@@ -37,7 +37,7 @@ DROP FOREIGN TABLE IF EXISTS ai_ext;
 CREATE FOREIGN TABLE ai_ext (
 id bigint,
 docid bigint,
-embedding vector(3)
+embedding vector(1536)
 ) server kite_svr options (schema_name 'public', table_name 'vector/vector*.csv', fmt 'csv');
 ```
 
@@ -51,7 +51,7 @@ DROP EXTERNAL TABLE IF EXISTS ai_ext;
 CREATE FOREIGN TABLE ai_ext (
 id bigint,
 docid bigint,
-embedding   vector(3)
+embedding   vector(1536)
 ) server kite_svr options (table_name 'vector/vector*.csv', fmt 'csv', mpp_execute 'multi servers');
 ```
 
