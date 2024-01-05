@@ -95,7 +95,7 @@ class OpExpr(Expr):
 		if isinstance(self.left, Expr):
 			leftsql = self.left.sql()
 		elif isinstance(self.left, list) or isinstance(self.left, np.ndarray):
-			leftsql = '\'{' + ','.join([str(e) for e in self.left]) + '}\''
+			leftsql = '\'{' + ','.join([e.sql() if isinstance(e, Expr) else str(e) for e in self.left]) + '}\''
 		else:
 			leftsql = str(self.left)
 
@@ -103,7 +103,7 @@ class OpExpr(Expr):
 		if isinstance(self.right, Expr):
 			rightsql = self.right.sql()
 		elif isinstance(self.right, list) or isinstance(self.right, np.ndarray):
-			rightsql = '\'{' + ','.join([str(e) for e in self.right]) + '}\''
+			rightsql = '\'{' + ','.join([e.sql() if isinstance(e, Expr) else str(e) for e in self.right]) + '}\''
 		else:
 			rightsql = str(self.right)
 
