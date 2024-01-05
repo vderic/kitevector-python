@@ -82,3 +82,20 @@ To get the N-Best documents,
 	except Exception as msg:
 		print(msg)
 ```
+
+You can also generate the SQL in postgres to run with your favorite postgres client,
+
+```
+	embedding = gen_embedding(1536)   # open AI embedding
+	nbest = 3
+	table = 'embedding_table'
+
+	try:
+		vs = kv.PgVector()
+		vs.table(table).select(['id', 'docid']).order_by(kv.VectorExpr('embedding').inner_product(embedding))
+		sql = vs.filter(kv.ScalarArrayOpExpr('id', [999, 4833])).limit(nbest).sql()
+		print(sql)
+	except Exception as msg:
+		print(msg)
+```
+
