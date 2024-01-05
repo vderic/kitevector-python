@@ -24,7 +24,7 @@ if __name__ == "__main__":
 	random.seed(1)
 	path = 'ext_ai'
 
-	# generate SQL for Kite
+	# generate SQL for Postgres: SELECT id, docid from table WHERE embedding <#> '[...]' ORDER BY embedding <#> '[...]' LIMIT 5
 	vs = vector.PgVector()
 	embed = gen_embedding(1536)
 	vs.select(['id', 'docid']).table(path).order_by(vector.Embedding("embedding").inner_product(embed))
