@@ -111,9 +111,8 @@ class BaseVector:
 
 class PgVector(BaseVector):
 
-	def __init__(self, host):
+	def __init__(self):
 		super().__init__()
-		self.host = host
 
 	def sql(self):
 		sql = '''SELECT {} FROM "{}"'''.format(','.join(self.projection), self.path)

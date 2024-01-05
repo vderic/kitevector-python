@@ -23,16 +23,15 @@ if __name__ == "__main__":
 
 	random.seed(1)
 	path = 'ext_ai'
-	host = 'localhost:7878'
 
-	vs = vector.PgVector(host)
+	vs = vector.PgVector()
 	embed = gen_embedding(1536)
 	vs.select(['id', 'docid']).table(path).order_by(vector.Embedding("embedding").inner_product(embed))
 	vs.filter(vector.Embedding("embedding").inner_product(embed).gt(0.07)).limit(5)
 	sql = vs.sql()
 	print(sql)
 
-	vs1 = vector.PgVector(host)
+	vs1 = vector.PgVector()
 	vs1.select(['id', 'docid']).table(path).order_by(vector.Expr("docid"))
 	vs1.filter(vector.ScalarArrayOpExpr("id", [1,2,3])).filter(vector.OpExpr('>', 'id', 0.7)).limit(5)
 	sql = vs1.sql()

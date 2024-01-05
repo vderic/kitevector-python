@@ -84,15 +84,22 @@ if __name__ == "__main__":
 
 	embed = gen_embedding(dim)
 	labels, distances = p.knn_query(embed, k = 10)
-	filter = 'id IN (' + ','.join([str(id) for id in labels.reshape(-1)]) + ')'
+	index_filter = vector.ScalarArrayOpExpr('id', labels.reshape(-1))
 
 	vs = vector.KiteVector(schema, hosts, 3)
 	vs.format(kite.ParquetFileSpec()).table(path).select(['id', 'docid']).order_by(vector.Embedding('embedding').inner_product(embed))
-	vs.filter(vector.Expr(filter)).limit(6)
+	vs.filter(index_filter).limit(6)
 	rows, scores = vs.execute()
-
 	print(rows)
 	print(scores)
+
+	# for postgres, generate SQL like below
+	pg = vector.PgVector()
+	sql = pg.table(path).select(['id', 'docid']).order_by(vector.Embedding('embedding').inner_product(embed)).filter(index_filter).limit(6).sql()
+	print(sql)
+
+
+
 
 	# Index objects support pickling
 	# WARNING: serialization via pickle.dumps(p) or p.__getstate__() is NOT thread-safe with p.add_items method!
