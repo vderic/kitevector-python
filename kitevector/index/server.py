@@ -13,8 +13,17 @@ import threading
 
 class KiteIndex:
 
+	datadir = None
+	kite_port = 0
 	indexes = {}
 	idxlocks = {}
+
+	@classmethod
+	def init(cls, datadir, kite_port):
+		cls.datadir = datadir
+		cls.kite_port = kite_port
+
+		cls.load(datadir)
 
 	@classmethod
 	def get_indexkey(cls, req):
@@ -60,11 +69,6 @@ class KiteIndex:
 	
 class RequestHandler(BaseHTTPRequestHandler):
 
-	def __init__(self, datadir, kite_port, *args, **kwargs):
-		self.datadir = datadir
-		self.kite_port = kite_port
-		super().__init__(*args, **kwargs)
-
 	def create_index(self):
 		content_length = int(self.headers.get("Content-Length"))
 		body = self.rfile.read(content_length)
@@ -72,7 +76,6 @@ class RequestHandler(BaseHTTPRequestHandler):
 
 		KiteIndex.create(json.loads(body))
 
-		print(self.datadir)
 		status = {'status': 'ok'}
 		msg = json.dumps(status).encode('utf-8')
 		
@@ -125,14 +128,6 @@ class RequestHandler(BaseHTTPRequestHandler):
 		else:
 			pass
 
-
-
-def run(args):
-	server = ('', args.port)
-	handler = partial(RequestHandler, args.datadir, args.kite)
-	httpd = HTTPServer(server, handler)
-	httpd.serve_forever()
-
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 	parser.add_argument('-p', '--port', type=int, default=8181)
@@ -143,4 +138,7 @@ if __name__ == "__main__":
 	if not os.path.isdir(args.datadir):
 		raise Exception("data directory not exists")
 
-	run(args)
+	KiteIndex.init(args.datadir, args.kite)
+	server = ('', args.port)
+	httpd = HTTPServer(server, RequestHandler)
+	httpd.serve_forever()
