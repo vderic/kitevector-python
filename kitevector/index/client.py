@@ -24,8 +24,9 @@ class IndexRequest:
 
 		return s
 
-	def json(self):
-		return json.dumps(self.__dict__)
+class IndexRequestEncoder(JSONEncoder):
+	def default(self, o):
+		return o.__dict__
 
 @dataclass
 class IndexConfig:
@@ -55,10 +56,10 @@ class IndexClient:
 			
 	def query(self):
 
-		for host, req in zip(self.hosts, self.requests)
+		for host, req in zip(self.hosts, self.requests):
 			conn = http.client.HTTPConnection(host[0], int(host[1]))
 			headers = {'Content-type': 'application/json'}
-			json_data = json.dumps(req)
+			json_data = json.dumps(req, cls=IndexRequestEncoder)
 			conn.request('POST', '/query', json_data, headers)
 			self.connections.append(conn)
 
@@ -141,7 +142,7 @@ if __name__ == "__main__":
 	
 	config = IndexConfig(1.0, 1536)
 	req = IndexRequest(schema, path, 2, fragcnt, index_colref, config)
-	print(req.json())
+	print(json.dumps(req, cls=IndexRequestEncoder))
 	#print(req.json(config))
 
 	client = IndexClient(schema, path, hosts, fragcnt, index_colref, config)
