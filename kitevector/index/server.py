@@ -11,7 +11,10 @@ class RequestHandler(BaseHTTPRequestHandler):
 		pass
 
 	def query(self):
-		print("query")
+		content_length = int(self.headers.get("Content-Length"))
+		body = self.rfile.read(content_length)
+		print(str(body))
+
 		embedding = [12,2,3,4]
 		msg = json.dumps(embedding).encode('utf-8')
 		
@@ -29,9 +32,6 @@ class RequestHandler(BaseHTTPRequestHandler):
 			self.delete_index()
 
 	def do_POST(self):
-		content_length = int(self.headers.get("Content-Length"))
-		body = self.rfile.read(content_length)
-
 		print("path = " , self.path)
 
 		if self.path == '/build_index':
