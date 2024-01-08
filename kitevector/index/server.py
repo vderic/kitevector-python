@@ -8,10 +8,19 @@ class KiteIndexServerContext:
 class RequestHandler(BaseHTTPRequestHandler):
 
 	def create_index(self):
-		pass
+		content_length = int(self.headers.get("Content-Length"))
+		body = self.rfile.read(content_length)
+		print(str(body))
 
-	def build_index(self):
-		pass
+		status = {'status': 'ok'}
+		msg = json.dumps(status).encode('utf-8')
+		
+		self.send_response(200)
+		self.send_header("Content-Length", len(msg))
+		self.send_header("Content-Type", "application/json")
+		self.end_headers()
+
+		self.wfile.write(msg)
 
 	def query(self):
 		content_length = int(self.headers.get("Content-Length"))

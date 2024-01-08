@@ -37,6 +37,8 @@ class IndexRequestEncoder(JSONEncoder):
 class IndexConfig:
 	ef_construction: int
 	dimension : int
+	space: str
+	M : int
 	
 	def dict(self):
 		return self.__dict__
@@ -86,8 +88,28 @@ class IndexClient:
 			print(r)
 		
 
-	def create_index(self, config):
-		pass
+	def create_index(self):
+		for host, req in zip(self.hosts, self.requests):
+			conn = http.client.HTTPConnection(host[0], host[1])
+			headers = {'Content-Type': 'application/json'}
+			req.set_embedding(embedding)
+			json_data = json.dumps(req, cls=IndexRequestEncoder)
+			conn.request('POST', '/create', json_data, headers)
+			self.connections.append(conn)
+
+		for c in self.connections:
+			r = c.getresponse()
+			self.responses.append(r)
+			self.selectors.register(r, selectors.EVENT_READ, self.read)
+
+
+		while True:
+			r = client.next()
+			if r is None:
+				break
+
+			# got result from Hnsw index and do heap sort to get nbest
+			print(r)
 
 	def delete_index(self):
 		pass
@@ -148,19 +170,22 @@ if __name__ == "__main__":
 	path = "tmp/vector/vector*.csv"
 	index_colref = {"id": "id", "embedding": "embedding"}
 	
-	config = IndexConfig(1.0, 1536)
+	config = IndexConfig(1.0, 1536, 'ip', 16)
 	req = IndexRequest("movieindex", schema, path, 2, fragcnt, index_colref, config)
 	print(json.dumps(req, cls=IndexRequestEncoder))
 	#print(req.json(config))
 
 	embedding = [1.0333,2.3455,3.334]
 
-	client = IndexClient("movieindex", schema, path, hosts, fragcnt, index_colref, config)
+	client = None
 	try:
-		#client.create_index()
+		client = IndexClient("movieindex", schema, path, hosts, fragcnt, index_colref, config)
+		client.create_index()
+		client = IndexClient("movieindex", schema, path, hosts, fragcnt, index_colref, config)
 		client.query(embedding)
 	except Exception as msg:
 		print(msg)
 	finally:
-		client.close()
+		if client is not None:
+			client.close()
 
