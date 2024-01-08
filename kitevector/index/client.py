@@ -4,16 +4,18 @@ import json
 from json import JSONEncoder
 import selectors
 import copy
+from kite import kite
 
 class IndexRequest:
 
-	def __init__(self, name, schema, path, fragid, fragcnt, colref, config):
+	def __init__(self, name, schema, path, fragid, fragcnt, colref, filespec, config):
 		self.name = name
 		self.schema = self.to_schema(schema)
 		self.path = path
 		self.fragment = [fragid, fragcnt]
 		self.colref = colref
 		self.config = config.dict()
+		self.filespec = filespec.toJSON()
 		self.embedding = []
 
 	def set_embedding(self, embedding):
@@ -45,7 +47,7 @@ class IndexConfig:
 
 class IndexClient:
 	
-	def __init__(self, name, schema, path, hosts, fragcnt, colref, config):
+	def __init__(self, name, schema, path, hosts, fragcnt, colref, filespec, config):
 		self.selectors = selectors.DefaultSelector()
 		self.connections = []
 		self.responses = []
@@ -61,7 +63,7 @@ class IndexClient:
 			h = hostport[0]
 			p = int(hostport[1])
 			self.hosts.append((h, p))
-			self.requests.append(IndexRequest(name, schema, path, i, fragcnt, colref, config))
+			self.requests.append(IndexRequest(name, schema, path, i, fragcnt, colref, filespec, config))
 			
 	def query(self, embedding):
 
@@ -171,7 +173,7 @@ if __name__ == "__main__":
 	index_colref = {"id": "id", "embedding": "embedding"}
 	
 	config = IndexConfig(1.0, 1536, 'ip', 16)
-	req = IndexRequest("movieindex", schema, path, 2, fragcnt, index_colref, config)
+	req = IndexRequest("movieindex", schema, path, 2, fragcnt, index_colref, kite.ParquetFileSpec(), config)
 	print(json.dumps(req, cls=IndexRequestEncoder))
 	#print(req.json(config))
 
@@ -179,9 +181,10 @@ if __name__ == "__main__":
 
 	client = None
 	try:
-		client = IndexClient("movieindex", schema, path, hosts, fragcnt, index_colref, config)
+		filespec = kite.ParquetFileSpec()
+		client = IndexClient("movieindex", schema, path, hosts, fragcnt, index_colref, filespec, config)
 		client.create_index()
-		client = IndexClient("movieindex", schema, path, hosts, fragcnt, index_colref, config)
+		client = IndexClient("movieindex", schema, path, hosts, fragcnt, index_colref, filespec, config)
 		client.query(embedding)
 	except Exception as msg:
 		print(msg)

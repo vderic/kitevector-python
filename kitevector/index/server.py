@@ -1,11 +1,15 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import urlparse
 import json
-
-class KiteIndexServerContext:
-	indexes = {}
+import numpy as np
+import pickle
+import hnswlib
+from kite import kite
+from kite.xrg import xrg
 
 class RequestHandler(BaseHTTPRequestHandler):
+
+	indexes = {}
 
 	def create_index(self):
 		content_length = int(self.headers.get("Content-Length"))
@@ -54,6 +58,8 @@ class RequestHandler(BaseHTTPRequestHandler):
 			pass
 
 
+def load_index(datadir):
+	pass
 
 def run():
 	server = ('', 8181)
