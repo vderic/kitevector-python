@@ -1,21 +1,69 @@
+from dataclasses import dataclass
 import http.client
 import json
+from json import JSONEncoder
 import selectors
+import copy
 
-class KiteIndexClient:
+class IndexRequest:
+
+	def __init__(self, schema, path, fragid, fragcnt):
+		self.schema = self.to_schema(schema)
+		self.path = path
+		self.fragment = [fragid, fragcnt]
+
+	def to_schema(self, schema):
+		s = []
+		for c in schema:
+			obj = {}
+			obj['name'] = c[0]
+			obj['type'] = c[1]
+			s.append(obj)
+
+		return s
+
+	def json(self, config = None):
+		dict = self.__dict__
+		if config is not None:
+			dict = copy.deepcopy(self.__dict__)
+			dict['config'] = config.dict()
+		return json.dumps(dict)
+
+@dataclass
+class IndexConfig:
+	ef_construction: int
 	
-	def __init__(self):
+	def dict(self):
+		return self.__dict__
+
+class IndexClient:
+	
+	def __init__(self, schema, path, hosts, fragcnt):
 		self.selectors = selectors.DefaultSelector()
 		self.connections = []
 		self.responses = []
 		self.batches = []
+		self.fragcnt = fragcnt
+		self.hosts = []
+		nhost = len(hosts)
 
-
+		self.requests = []
+		for i in range(fragcnt):
+			self.hosts.append(hosts[i % nhost])
+			self.requests.append(IndexRequest(schema, path, i, fragcnt))
+			
 	def query(self):
 
-		for i in range(2):
+		for i in range(len(self.hosts)):
+
+			hostport = self.hosts[i].split(':')
+
+			host = hostport[0]
+			port = int(hostport[1])
+			fragid = i
+			fragcnt = self.fragcnt
 			
-			conn = http.client.HTTPConnection('localhost', 8181)
+			conn = http.client.HTTPConnection(host, port)
 
 			headers = {'Content-type': 'application/json'}
 
@@ -41,7 +89,7 @@ class KiteIndexClient:
 			print(r)
 		
 
-	def build_index(self):
+	def create_index(self, config):
 		pass
 
 	def delete_index(self):
@@ -96,9 +144,19 @@ class KiteIndexClient:
 				
 
 if __name__ == "__main__":
+
+	hosts = ["localhost:8181"]
+	fragcnt = 3
+	schema = [("id", "int64"), ("docid", "int64"), ("embedding", "float[]")]
+	path = "tmp/vector/vector*.csv"
 	
-	client = KiteIndexClient()
+	config = IndexConfig(1.0)
+	req = IndexRequest(schema, path, 2, fragcnt)
+	print(req.json(config))
+
+	client = IndexClient(schema, path, hosts, fragcnt)
 	try:
+		#client.create_index()
 		client.query()
 	except Exception as msg:
 		print(msg)
