@@ -37,6 +37,8 @@ class KiteIndex:
 
 	@classmethod
 	def load(cls, datadir):
+		if not os.path.isdir(datadir):
+			raise Exception("data directory not exists")
 		
 		idxlist = ['movieindex_0_3', 'movieindex_1_3', 'movieindex_2_3']
 		for idx in idxlist:
@@ -134,9 +136,6 @@ if __name__ == "__main__":
 	parser.add_argument('--kite', type=int, default=7878)
 	parser.add_argument('datadir')
 	args = parser.parse_args()
-
-	if not os.path.isdir(args.datadir):
-		raise Exception("data directory not exists")
 
 	KiteIndex.init(args.datadir, args.kite)
 	server = ('', args.port)
