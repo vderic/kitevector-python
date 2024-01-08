@@ -2,10 +2,13 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import urlparse
 import json
 
-class KiteIndex:
+class KiteIndexServerContext:
 	indexes = {}
 
 class RequestHandler(BaseHTTPRequestHandler):
+
+	def create_index(self):
+		pass
 
 	def build_index(self):
 		pass
@@ -28,14 +31,14 @@ class RequestHandler(BaseHTTPRequestHandler):
 
 	
 	def do_DELETE(self):
-		if self.path == 'delete_index':
+		if self.path == '/delete':
 			self.delete_index()
 
 	def do_POST(self):
 		print("path = " , self.path)
 
-		if self.path == '/build_index':
-			self.build_index()
+		if self.path == '/create':
+			self.create_index()
 		elif self.path == '/query':
 			self.query()
 		else:

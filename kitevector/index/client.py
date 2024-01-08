@@ -7,7 +7,8 @@ import copy
 
 class IndexRequest:
 
-	def __init__(self, schema, path, fragid, fragcnt, colref, config):
+	def __init__(self, name, schema, path, fragid, fragcnt, colref, config):
+		self.name = name
 		self.schema = self.to_schema(schema)
 		self.path = path
 		self.fragment = [fragid, fragcnt]
@@ -42,7 +43,7 @@ class IndexConfig:
 
 class IndexClient:
 	
-	def __init__(self, schema, path, hosts, fragcnt, colref, config):
+	def __init__(self, name, schema, path, hosts, fragcnt, colref, config):
 		self.selectors = selectors.DefaultSelector()
 		self.connections = []
 		self.responses = []
@@ -58,7 +59,7 @@ class IndexClient:
 			h = hostport[0]
 			p = int(hostport[1])
 			self.hosts.append((h, p))
-			self.requests.append(IndexRequest(schema, path, i, fragcnt, colref, config))
+			self.requests.append(IndexRequest(name, schema, path, i, fragcnt, colref, config))
 			
 	def query(self, embedding):
 
@@ -148,13 +149,13 @@ if __name__ == "__main__":
 	index_colref = {"id": "id", "embedding": "embedding"}
 	
 	config = IndexConfig(1.0, 1536)
-	req = IndexRequest(schema, path, 2, fragcnt, index_colref, config)
+	req = IndexRequest("movieindex", schema, path, 2, fragcnt, index_colref, config)
 	print(json.dumps(req, cls=IndexRequestEncoder))
 	#print(req.json(config))
 
 	embedding = [1.0333,2.3455,3.334]
 
-	client = IndexClient(schema, path, hosts, fragcnt, index_colref, config)
+	client = IndexClient("movieindex", schema, path, hosts, fragcnt, index_colref, config)
 	try:
 		#client.create_index()
 		client.query(embedding)
