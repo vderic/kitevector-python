@@ -48,29 +48,18 @@ class IndexClient:
 
 		self.requests = []
 		for i in range(fragcnt):
-			self.hosts.append(hosts[i % nhost])
+			host = hosts[i % nhost]
+			hostport = host.split(':')
+			self.hosts.append(hostport)
 			self.requests.append(IndexRequest(schema, path, i, fragcnt, colref, config))
 			
 	def query(self):
 
-		for i in range(len(self.hosts)):
-
-			hostport = self.hosts[i].split(':')
-
-			host = hostport[0]
-			port = int(hostport[1])
-			fragid = i
-			fragcnt = self.fragcnt
-			
-			conn = http.client.HTTPConnection(host, port)
-
+		for host, req in zip(self.hosts, self.requests)
+			conn = http.client.HTTPConnection(host[0], int(host[1]))
 			headers = {'Content-type': 'application/json'}
-
-			foo = {'text': 'Hello HTTP #1 **cool**, and #1!'}
-			json_data = json.dumps(foo)
-
+			json_data = json.dumps(req)
 			conn.request('POST', '/query', json_data, headers)
-
 			self.connections.append(conn)
 
 		for c in self.connections:
