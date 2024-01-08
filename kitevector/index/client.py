@@ -7,11 +7,12 @@ import copy
 
 class IndexRequest:
 
-	def __init__(self, schema, path, fragid, fragcnt, cols):
+	def __init__(self, schema, path, fragid, fragcnt, colref, config):
 		self.schema = self.to_schema(schema)
 		self.path = path
 		self.fragment = [fragid, fragcnt]
-		self.colref = cols
+		self.colref = colref
+		self.config = config.dict()
 
 	def to_schema(self, schema):
 		s = []
@@ -23,23 +24,20 @@ class IndexRequest:
 
 		return s
 
-	def json(self, config = None):
-		dict = self.__dict__
-		if config is not None:
-			dict = copy.deepcopy(self.__dict__)
-			dict['config'] = config.dict()
-		return json.dumps(dict)
+	def json(self):
+		return json.dumps(self.__dict__)
 
 @dataclass
 class IndexConfig:
 	ef_construction: int
+	dimension : int
 	
 	def dict(self):
 		return self.__dict__
 
 class IndexClient:
 	
-	def __init__(self, schema, path, hosts, fragcnt, cols):
+	def __init__(self, schema, path, hosts, fragcnt, colref, config):
 		self.selectors = selectors.DefaultSelector()
 		self.connections = []
 		self.responses = []
@@ -51,7 +49,7 @@ class IndexClient:
 		self.requests = []
 		for i in range(fragcnt):
 			self.hosts.append(hosts[i % nhost])
-			self.requests.append(IndexRequest(schema, path, i, fragcnt, cols))
+			self.requests.append(IndexRequest(schema, path, i, fragcnt, colref, config))
 			
 	def query(self):
 
@@ -152,11 +150,12 @@ if __name__ == "__main__":
 	path = "tmp/vector/vector*.csv"
 	index_colref = {"id": "id", "embedding": "embedding"}
 	
-	config = IndexConfig(1.0)
-	req = IndexRequest(schema, path, 2, fragcnt, index_colref)
-	print(req.json(config))
+	config = IndexConfig(1.0, 1536)
+	req = IndexRequest(schema, path, 2, fragcnt, index_colref, config)
+	print(req.json())
+	#print(req.json(config))
 
-	client = IndexClient(schema, path, hosts, fragcnt, index_colref)
+	client = IndexClient(schema, path, hosts, fragcnt, index_colref, config)
 	try:
 		#client.create_index()
 		client.query()
