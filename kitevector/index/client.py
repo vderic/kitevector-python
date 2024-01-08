@@ -32,6 +32,15 @@ class KiteIndexClient:
 			self.selectors.register(r, selectors.EVENT_READ, self.read)
 
 
+		while True:
+			r = client.next()
+			if r is None:
+				break
+
+			# got result from Hnsw index and do heap sort to get nbest
+			print(r)
+		
+
 	def build_index(self):
 		pass
 
@@ -91,11 +100,6 @@ if __name__ == "__main__":
 	client = KiteIndexClient()
 	try:
 		client.query()
-		while True:
-			r = client.next()
-			if r is None:
-				break
-			print(r)
 	except Exception as msg:
 		print(msg)
 	finally:
