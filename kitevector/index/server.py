@@ -17,6 +17,10 @@ class KiteIndex:
 	idxlocks = {}
 
 	@classmethod
+	def get_indexkey(cls, req):
+		return '{}_{}_{}'.format(req['name'], req['fragment'][0], req['fragment'][1])
+
+	@classmethod
 	def get_lock(cls, idxname):
 		if cls.idxlocks.get(idxname) == None:
 			cls.idxlocks[idxname] = threading.Lock()
@@ -34,7 +38,7 @@ class KiteIndex:
 	@classmethod
 	def query(cls, req):	
 		idx = None
-		idxname = '{}_{}_{}'.format(req['name'], req['fragment'][0], req['fragment'][1])
+		idxname = cls.get_indexkey(req)
 		print(idxname)
 		with cls.get_lock(idxname):
 			idx = cls.indexes[idxname]
@@ -45,7 +49,7 @@ class KiteIndex:
 	@classmethod
 	def create(cls, req):
 		print("KiteIndex.create")
-		idxname = '{}_{}_{}'.format(req['name'], req['fragment'][0], req['fragment'][1])
+		idxname = cls.get_indexkey(req)
 		with cls.get_lock(idxname):
 			# create index inside the lock
 			pass
