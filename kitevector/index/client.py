@@ -37,10 +37,14 @@ class IndexRequestEncoder(JSONEncoder):
 
 @dataclass
 class IndexConfig:
-	ef_construction: int
-	dimension : int
-	space: str
-	M : int
+	space: str             # possible options are l2, cosine or ip
+	dimension : int        # number of dimension
+	M : int                # parameter that defines the maximum number of outgoing connections in the graph
+	ef_construction: int   # parameter that controls speed/accuracy trade-off during the index construction
+	max_elements: int      # max number of elements 
+	ef: int                # ef should always be > k
+	num_threads: int       # default number of threads to use in add_items or knn_query. Not that calling p.set_num_threads(3) is equaivalent to p.num_threads=3.
+	k: int                 # number of the closest elements
 	
 	def dict(self):
 		return self.__dict__
@@ -121,7 +125,7 @@ class IndexClient:
 			print(response.fileno())
 			return response.read().decode()
 		except Exception as msg:
-			print(msg)
+			print("Exception: ", msg)
 			raise
 
 		return None
@@ -172,7 +176,16 @@ if __name__ == "__main__":
 	path = "tmp/vector/vector*.csv"
 	index_colref = {"id": "id", "embedding": "embedding"}
 	
-	config = IndexConfig(1.0, 1536, 'ip', 16)
+	space = 'ip'
+	dim = 1536
+	M = 16
+	ef_construction = 200
+	max_elements = 1000
+	ef = 50
+	num_threads = 1
+	k = 10
+	config = IndexConfig(space, dim, M, ef_construction, max_elements, ef, num_threads, k)
+
 	req = IndexRequest("movieindex", schema, path, 2, fragcnt, index_colref, kite.ParquetFileSpec(), config)
 	print(json.dumps(req, cls=IndexRequestEncoder))
 	#print(req.json(config))
@@ -187,7 +200,7 @@ if __name__ == "__main__":
 		client = IndexClient("movieindex", schema, path, hosts, fragcnt, index_colref, filespec, config)
 		client.query(embedding)
 	except Exception as msg:
-		print(msg)
+		print('Exception: ', msg)
 	finally:
 		if client is not None:
 			client.close()
