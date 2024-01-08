@@ -58,7 +58,7 @@ class IndexClient:
 
 		for host, req in zip(self.hosts, self.requests):
 			conn = http.client.HTTPConnection(host[0], int(host[1]))
-			headers = {'Content-type': 'application/json'}
+			headers = {'Content-Type': 'application/json'}
 			json_data = json.dumps(req, cls=IndexRequestEncoder)
 			conn.request('POST', '/query', json_data, headers)
 			self.connections.append(conn)
