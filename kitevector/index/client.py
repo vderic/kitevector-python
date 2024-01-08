@@ -13,6 +13,10 @@ class IndexRequest:
 		self.fragment = [fragid, fragcnt]
 		self.colref = colref
 		self.config = config.dict()
+		self.embedding = []
+
+	def set_embedding(self, embedding):
+		self.embedding = embedding
 
 	def to_schema(self, schema):
 		s = []
@@ -56,11 +60,12 @@ class IndexClient:
 			self.hosts.append((h, p))
 			self.requests.append(IndexRequest(schema, path, i, fragcnt, colref, config))
 			
-	def query(self):
+	def query(self, embedding):
 
 		for host, req in zip(self.hosts, self.requests):
 			conn = http.client.HTTPConnection(host[0], host[1])
 			headers = {'Content-Type': 'application/json'}
+			req.set_embedding(embedding)
 			json_data = json.dumps(req, cls=IndexRequestEncoder)
 			conn.request('POST', '/query', json_data, headers)
 			self.connections.append(conn)
@@ -147,10 +152,12 @@ if __name__ == "__main__":
 	print(json.dumps(req, cls=IndexRequestEncoder))
 	#print(req.json(config))
 
+	embedding = [1.0333,2.3455,3.334]
+
 	client = IndexClient(schema, path, hosts, fragcnt, index_colref, config)
 	try:
 		#client.create_index()
-		client.query()
+		client.query(embedding)
 	except Exception as msg:
 		print(msg)
 	finally:
