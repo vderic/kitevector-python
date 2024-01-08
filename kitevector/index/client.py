@@ -7,10 +7,11 @@ import copy
 
 class IndexRequest:
 
-	def __init__(self, schema, path, fragid, fragcnt):
+	def __init__(self, schema, path, fragid, fragcnt, cols):
 		self.schema = self.to_schema(schema)
 		self.path = path
 		self.fragment = [fragid, fragcnt]
+		self.colref = cols
 
 	def to_schema(self, schema):
 		s = []
@@ -38,7 +39,7 @@ class IndexConfig:
 
 class IndexClient:
 	
-	def __init__(self, schema, path, hosts, fragcnt):
+	def __init__(self, schema, path, hosts, fragcnt, cols):
 		self.selectors = selectors.DefaultSelector()
 		self.connections = []
 		self.responses = []
@@ -50,7 +51,7 @@ class IndexClient:
 		self.requests = []
 		for i in range(fragcnt):
 			self.hosts.append(hosts[i % nhost])
-			self.requests.append(IndexRequest(schema, path, i, fragcnt))
+			self.requests.append(IndexRequest(schema, path, i, fragcnt, cols))
 			
 	def query(self):
 
@@ -149,12 +150,13 @@ if __name__ == "__main__":
 	fragcnt = 3
 	schema = [("id", "int64"), ("docid", "int64"), ("embedding", "float[]")]
 	path = "tmp/vector/vector*.csv"
+	index_colref = {"id": "id", "embedding": "embedding"}
 	
 	config = IndexConfig(1.0)
-	req = IndexRequest(schema, path, 2, fragcnt)
+	req = IndexRequest(schema, path, 2, fragcnt, index_colref)
 	print(req.json(config))
 
-	client = IndexClient(schema, path, hosts, fragcnt)
+	client = IndexClient(schema, path, hosts, fragcnt, index_colref)
 	try:
 		#client.create_index()
 		client.query()
