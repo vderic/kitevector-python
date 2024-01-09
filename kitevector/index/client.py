@@ -76,7 +76,7 @@ class IndexClient:
 
 
 		while True:
-			r = client.next()
+			r = self.next()
 			if r is None:
 				break
 
@@ -100,7 +100,7 @@ class IndexClient:
 
 
 		while True:
-			r = client.next()
+			r = self.next()
 			if r is None:
 				break
 
@@ -157,40 +157,3 @@ class IndexClient:
 			c.close()
 
 		self.selectors.close()
-				
-
-if __name__ == "__main__":
-
-	hosts = ["localhost:8181"]
-	fragcnt = 3
-	schema = [{'name':'id', 'type':'int64'},
-		{'name':'docid', 'type':'int64'},
-		{'name':'embedding', 'type':'float[]'}]
-	path = "tmp/vector/vector*.parquet"
-	index_colref = {"id": "id", "embedding": "embedding"}
-	
-	space = 'ip'
-	dim = 1536
-	M = 16
-	ef_construction = 200
-	max_elements = 10000
-	ef = 50
-	num_threads = 1
-	k = 10
-	config = IndexConfig(space, dim, M, ef_construction, max_elements, ef, num_threads, k)
-
-	embedding = [1.0333,2.3455,3.334]
-
-	client = None
-	try:
-		filespec = kite.ParquetFileSpec()
-		client = IndexClient("movie", schema, path, hosts, fragcnt, index_colref, filespec, config)
-		client.create_index()
-		#client = IndexClient("movieindex", schema, path, hosts, fragcnt, index_colref, filespec, config)
-		#client.query(embedding)
-	except Exception as msg:
-		print('Exception: ', msg)
-	finally:
-		if client is not None:
-			client.close()
-

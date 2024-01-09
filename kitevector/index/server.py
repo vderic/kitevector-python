@@ -63,6 +63,12 @@ class Index:
 
 		# found the index and get the nbest
 		print("KiteIndex.query")
+		embedding = np.float32(req['embedding'])
+		ef = req['config']['ef']
+		k  = req['config']['k']
+		idx.set_ef(ef)
+		ids, distances = idx.knn_query(embedding, k=k)
+		print(ids, distances)
 
 	@classmethod
 	def create(cls, req):
@@ -123,7 +129,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 	def create_index(self):
 		content_length = int(self.headers.get("Content-Length"))
 		body = self.rfile.read(content_length)
-		print(str(body))
+		#print(str(body))
 
 		try:
 			Index.create(json.loads(body))
@@ -146,7 +152,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 	def query(self):
 		content_length = int(self.headers.get("Content-Length"))
 		body = self.rfile.read(content_length)
-		print(str(body))
+		#print(str(body))
 
 		try:
 			Index.query(json.loads(body))
