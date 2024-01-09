@@ -69,7 +69,9 @@ To get the N-Best documents without Index,
 	# use parquet as source file
 	parquetspec = kite.ParquetFileSpec()
 	hosts = ['localhost:7878']
-	schema =  [('id', 'int64'), ('docid', 'int64'), ('embedding', 'float[]', 0, 0)]
+	schema = [{'name':'id', 'type':'int64'},
+		{'name':'docid', 'type':'int64'},
+		{'name':'embedding', 'type':'float[]'}]
 	embedding = gen_embedding(1536)   # open AI embedding
 	nbest = 3
 
@@ -90,7 +92,9 @@ To get the N-Best documents with distributed index,
 	path = 'vector/vector*.csv'
 	# use parquet as source file
 	parquetspec = kite.ParquetFileSpec()
-	schema =  [('id', 'int64'), ('docid', 'int64'), ('embedding', 'float[]', 0, 0)]
+	schema = [{'name':'id', 'type':'int64'},
+		{'name':'docid', 'type':'int64'},
+		{'name':'embedding', 'type':'float[]'}]
 	embedding = gen_embedding(1536)   # open AI embedding
 	nbest = 3
 
