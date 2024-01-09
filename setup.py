@@ -10,6 +10,6 @@ setup(
     license='Apache License 2.0',
     url='https://github.com/vderic/kitevector-python',
     description='Kite Vector for Python',
-    packages=['kitevector'],
+    packages=['kitevector', 'kitevector.index'],
     py_modules=['kitevector'],
 )
