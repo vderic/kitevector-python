@@ -4,6 +4,7 @@ import numpy as np
 
 from kite import kite
 from kite.xrg import xrg
+from kitevector.index import client
 
 class Expr:
 
@@ -183,8 +184,9 @@ class KiteVector(BaseVector):
 		self.indexcli = None
 		
 
-	def index(self, indexcli):
-		self.indexcli = indexcli
+	# call after table() and format()
+	def index(self, name, hosts, colref, config):
+		self.indexcli = client.IndexClient(name, self.schema, self.path, hosts, self.fragcnt, colref, self.filespec, config)
 		return self
 
 
