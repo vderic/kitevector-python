@@ -49,6 +49,7 @@ class IndexClient:
 		self.batches = []
 		self.fragcnt = fragcnt
 		self.hosts = []
+		self.colref = colref
 		nhost = len(hosts)
 
 		self.requests = []
@@ -60,6 +61,9 @@ class IndexClient:
 			self.hosts.append((h, p))
 			self.requests.append(IndexRequest(name, schema, path, i, fragcnt, colref, filespec, config))
 			
+	def get_colref(self):
+		return self.colref
+
 	def query(self, embedding, k=None):
 
 		for host, req in zip(self.hosts, self.requests):
