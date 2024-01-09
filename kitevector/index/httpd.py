@@ -44,9 +44,14 @@ class RequestHandler(BaseHTTPRequestHandler):
 		#print(str(body))
 
 		try:
-			index.Index.query(json.loads(body))
+			ids, distances = index.Index.query(json.loads(body))
 
-			msg=b'''[[0.3, 1], [0.4, 2]]'''
+			js = {}
+			js['status'] = 'ok'
+			js['ids'] = ids.tolist()
+			js['distances'] = distances.tolist()
+			
+			msg = json.dumps(js).encode('utf-8')
 
 			self.send_response(200)
 			self.send_header("Content-Length", len(msg))

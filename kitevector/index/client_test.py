@@ -46,7 +46,8 @@ if __name__ == "__main__":
 		#cli = client.IndexClient("movie", schema, path, hosts, fragcnt, index_colref, filespec, config)
 		#cli.create_index()
 		cli = client.IndexClient("movie", schema, path, hosts, fragcnt, index_colref, filespec, config)
-		cli.query([gen_embedding(dim)])
+		ids, distances = cli.query([gen_embedding(dim)],3)
+		print(ids, distances)
 	except Exception as msg:
 		print('New Exception: ', msg)
 	finally:

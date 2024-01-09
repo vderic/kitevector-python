@@ -60,13 +60,16 @@ class IndexClient:
 			self.hosts.append((h, p))
 			self.requests.append(IndexRequest(name, schema, path, i, fragcnt, colref, filespec, config))
 			
-	def query(self, embedding):
+	def query(self, embedding, k=None):
 
 		for host, req in zip(self.hosts, self.requests):
 			conn = http.client.HTTPConnection(host[0], host[1])
 			headers = {'Content-Type': 'application/json'}
 			req.set_embedding(embedding)
+			if k is not None:
+				req.config['k'] = k
 			json_data = json.dumps(req, cls=IndexRequestEncoder)
+
 			conn.request('POST', '/query', json_data, headers)
 			self.connections.append(conn)
 
@@ -76,13 +79,28 @@ class IndexClient:
 			self.selectors.register(r, selectors.EVENT_READ, self.read)
 
 
+		sort = [index.IndexSort(k) for i in range(len(embedding))]
 		while True:
 			r = self.next()
 			if r is None:
 				break
 
 			# got result from Hnsw index and do heap sort to get nbest
-			print(r)
+			response = json.loads(r)
+			if response['status'] != 'ok':
+				raise Exception("server error")
+
+			for s, ids, distances in zip(sort, response['ids'], response['distances']):
+				s.add(ids, distances)
+
+		ids = []
+		distances = []
+		for s in sort:
+			id, distance = s.get()
+			ids.append(id)
+			distances.append(distance)
+
+		return ids, distances
 		
 
 	def create_index(self):
@@ -113,7 +131,6 @@ class IndexClient:
 
 	def read(self, response, mask):
 		try:
-			print(response.fileno())
 			return response.read().decode()
 		except Exception as msg:
 			print("Exception: ", msg)

@@ -94,7 +94,7 @@ class Index:
 		k  = req['config']['k']
 		idx.set_ef(ef)
 		ids, distances = idx.knn_query(embedding, k=k)
-		print(ids, distances)
+		return ids, distances
 
 	@classmethod
 	def create(cls, req):
