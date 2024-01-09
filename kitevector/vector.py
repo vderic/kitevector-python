@@ -255,7 +255,7 @@ class KiteVector(BaseVector):
 				sql = self.index_sql()
 				return self.scan(sql)
 
-			return [], []
+			return []
 
 	def scan(self, sql):
 		kitecli = kite.KiteClient()
