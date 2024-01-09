@@ -180,8 +180,42 @@ class KiteVector(BaseVector):
 		self.schema = schema
 		self.hosts = hosts
 		self.fragcnt = fragcnt
+		self.indexcli = None
 		
+
+	def index(self, indexcli):
+		self.indexcli = indexcli
+		return self
+
+
 	def sql(self):
+		if self.orderby is None or self.nlimit is None:
+			raise ValueError("ORDER BY or LIMIT is absent")
+
+		if self.indexcli is None:
+			return self.flat_sql()
+		else:
+			return self.index_sql()
+
+
+	def index_sql(self):
+		if self.indexcli is None:
+			raise ValueError("Index not defined")
+
+		if self.projection is None or len(self.projection) == 0:
+			raise ValueError("projection not defined")
+
+		sql = '''SELECT {} FROM "{}"'''.format(','.join([str(c) if isinstance(c, Expr) else c for c in self.projection]), self.path)
+
+		if self.filters is not None and len(self.filters) > 0:
+			sql += ' WHERE '
+			sql += ' AND '.join([str(f) for f in self.filters])
+			
+		print(sql)
+		return sql
+		
+
+	def flat_sql(self):
 		project = []
 		if self.orderby is not None:
 			project.append(self.orderby)
@@ -196,15 +230,53 @@ class KiteVector(BaseVector):
 			sql += ' AND '.join([str(f) for f in self.filters])
 			
 		#print(sql)
-
-		if self.orderby is None or self.nlimit is None:
-			raise ValueError("ORDER BY or LIMIT is absent")
-
 		return sql
 
 	def execute(self):
-		sql = self.sql()
-		return self.sort(sql)
+		if self.indexcli is None:
+			sql = self.sql()
+			return self.sort(sql)
+		else:
+			if not isinstance(self.orderby, OpExpr): 
+				raise ValueError("order by is not OpExpr")
+			if not isinstance(self.orderby.left, VectorExpr):
+				raise ValueError("order by left is not VectorExpr")
+			if not isinstance(self.orderby.right, Embedding):
+				raise ValueError("order by left is not Embedding")
+
+			ids, distances = self.indexcli.query([self.orderby.right.embedding], self.nlimit)
+
+			if len(ids) > 0:
+				colref = self.indexcli.get_colref()
+				idfilter = ScalarArrayOpExpr(colref['id'], ids[0])
+				self.filter(idfilter)
+				sql = self.index_sql()
+				return self.scan(sql)
+
+			return [], []
+
+	def scan(self, sql):
+		kitecli = kite.KiteClient()
+		h = []
+		try:
+			kitecli.host(self.hosts).sql(sql).schema(self.schema).filespec(self.filespec).fragment(-1, self.fragcnt).submit()
+
+			#print("run SQL: ", sql)
+			while True:
+				iter = kitecli.next_row()
+				if iter is None:
+					break
+				else:
+					h.append(tuple(iter.values))
+			return h
+
+		except OSError as msg:
+			print(msg)
+			raise
+		finally:
+			kitecli.close()
+
+
 
 	def sort(self, sql):
 		kitecli = kite.KiteClient()
@@ -238,7 +310,7 @@ class KiteVector(BaseVector):
 				scores.append(t[0])
 				cols.append(t[1:])
 
-			return cols, scores
+			return cols
 
 		except OSError as msg:
 			print(msg)
