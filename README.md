@@ -82,7 +82,7 @@ To get the N-Best documents without Index,
 		print(msg)
 ```
 
-To get the N-Best documents Index,
+To get the N-Best documents with distributed index,
 
 ```
 	kite_hosts = ['localhost:7878']
