@@ -1,6 +1,4 @@
 import os
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from urllib.parse import urlparse
 import json
 import numpy as np
 import pickle
@@ -11,6 +9,34 @@ from functools import partial
 import argparse
 import threading
 import glob
+import heapq
+
+class IndexSort:
+
+	def __init__(self, nbest):
+		self.heap = []
+		self.nbest = nbest
+
+	def add(self, ids, distances):
+		for id, score in zip(ids, distances):
+			if len(self.heap) <= self.nbest:
+				heapq.heappush(self.heap, (score, id))
+			else:
+				heapq.heapreplace(self.heap, (score, id))
+		
+	def get(self):
+		if len(self.heap) == self.nbest+1:
+			heapq.heappop(self.heap)
+
+		scores = []
+		ids = []
+		for i in range(len(self.heap)):
+			t = heapq.heappop(self.heap)
+			scores.append(t[0])
+			ids.append(t[1])
+
+		return ids, scores
+
 
 class Index:
 
@@ -123,91 +149,20 @@ class Index:
 	@classmethod
 	def delete(cls, req):
 		print("KiteIndex.delete")
-	
-class RequestHandler(BaseHTTPRequestHandler):
-
-	def create_index(self):
-		content_length = int(self.headers.get("Content-Length"))
-		body = self.rfile.read(content_length)
-		#print(str(body))
-
-		try:
-			Index.create(json.loads(body))
-
-			status = {'status': 'ok'}
-			msg = json.dumps(status).encode('utf-8')
-		
-			self.send_response(200)
-			self.send_header("Content-Length", len(msg))
-			self.send_header("Content-Type", "application/json")
-			self.end_headers()
-			self.wfile.write(msg)
-		except Exception as e1:
-			print('KeyError: ', e1)
-			self.send_response(402)
-			status = b'''{'status': 'error'}'''
-			self.wfile.write(status)
-			
-
-	def query(self):
-		content_length = int(self.headers.get("Content-Length"))
-		body = self.rfile.read(content_length)
-		#print(str(body))
-
-		try:
-			Index.query(json.loads(body))
-
-			msg=b'''[[0.3, 1], [0.4, 2]]'''
-
-			self.send_response(200)
-			self.send_header("Content-Length", len(msg))
-			self.send_header("Content-Type", "application/json")
-			self.end_headers()
-			self.wfile.write(msg)
-		except KeyError as e1:
-			print('KeyError: ', e1)
-			self.send_response(402)
-			status = b'''{'status': 'error'}'''
-			self.wfile.write(status)
-		except Exception as e2:
-			print(e2)
-			self.send_response(402)
-			status = b'''{'status': 'error'}'''
-			self.wfile.write(status)
-			
-
-	
-	def do_DELETE(self):
-		if self.path == '/delete':
-			self.delete_index()
-
-	def do_POST(self):
-		print("path = " , self.path)
-
-		if self.path == '/create':
-			self.create_index()
-		elif self.path == '/query':
-			self.query()
-		else:
-			pass
-
-#class ThreadingHttpServer(ThreadingMixIn, HTTPServer):
-#	pass
 
 if __name__ == "__main__":
-	parser = argparse.ArgumentParser()
-	parser.add_argument('-p', '--port', type=int, default=8181)
-	parser.add_argument('--kite', type=int, default=7878)
-	parser.add_argument('datadir')
-	args = parser.parse_args()
 
-	Index.init(args.datadir, args.kite)
-	httpd = ThreadingHTTPServer(('', args.port), RequestHandler)
+	ids1 = [1,2,3,4,5,6,7,8]
+	scores1 = [0.3, 0.1, 0.5, 0.2, 0.7, 0.0, 0.4, 0.8]
+	ids2 = [10,20,30,40,50,60,70,80]
+	scores2 = [0.32, 0.15, 0.57, 0.23, 0.73, 0.3, 0.54, 0.48]
+	sort = IndexSort(5)
 
-	try:
-		httpd.serve_forever()
-	except KeyboardInterrupt:
-		pass
+	sort.add(ids1, scores1)
+	sort.add(ids2, scores2)
 
-	httpd.server_close()
+	ids, scores = sort.get()
 
+	print(ids, scores)
+
+	
