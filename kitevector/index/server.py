@@ -10,6 +10,7 @@ from kite.xrg import xrg
 from functools import partial
 import argparse
 import threading
+import glob
 
 class Index:
 
@@ -40,11 +41,17 @@ class Index:
 		if not os.path.isdir(datadir):
 			raise Exception("data directory not exists")
 		
-		idxlist = ['movieindex_0_3', 'movieindex_1_3', 'movieindex_2_3']
-		for idx in idxlist:
-			with cls.get_lock(idx):
-				print("KiteIndex.load")
+		flist = glob.glob('*.hnsw', root_dir = cls.datadir)
+		print(flist)
+		for f in flist:
+			idxname = os.path.splitext(os.path.basename(f))[0]
+			fpath = os.path.join(cls.datadir, f)
+			with cls.get_lock(idxname):
+				print("KiteIndex.load ", idxname)
 				# load the index inside the lock
+				with open(fpath, 'rb') as fp:
+					idx = pickle.load(fp)
+					cls.indexes[idxname] = idx
 
 	@classmethod
 	def query(cls, req):	
