@@ -32,6 +32,7 @@ if __name__ == "__main__":
 		{'name':'embedding', 'type':'float[]'}]
 	path = "tmp/vector/vector*.parquet"
 	
+	# index specific setting
 	space = 'ip'
 	dim = 1536
 	M = 16
@@ -40,12 +41,14 @@ if __name__ == "__main__":
 	ef = 50
 	num_threads = 1
 	k = 10
+	id_col = "id"     # column name of index column
+	embedding_col = "embedding"   # column name of embedding column
+	idxname = 'movie'    # index name and idenitifier
 
-	idxname = 'movie'
-	config = client.IndexConfig(idxname, space, dim, M, ef_construction, max_elements, ef, num_threads, k, "id", "embedding")
+	config = client.IndexConfig(idxname, space, dim, M, ef_construction, 
+		max_elements, ef, num_threads, k, id_col, embedding_col)
 
 	cli = None
-
 	embedding = gen_embedding(dim)
 
 	try:
