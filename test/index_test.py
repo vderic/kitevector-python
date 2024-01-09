@@ -69,8 +69,8 @@ if __name__ == "__main__":
 
 
 		# delete index
-#		cli = client.IndexClient(schema, path, idx_hosts, fragcnt, index_colref, filespec, config)
-#		cli.delete_index()
+		cli = client.IndexClient(schema, path, idx_hosts, fragcnt, filespec, config)
+		cli.delete_index()
 	except Exception as msg:
 		print('New Exception: ', msg)
 	finally:
