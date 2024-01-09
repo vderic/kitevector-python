@@ -58,9 +58,11 @@ class Index:
 
 	@classmethod
 	def get_lock(cls, idxname):
-		if cls.idxlocks.get(idxname) == None:
-			cls.idxlocks[idxname] = threading.Lock()
-		return cls.idxlocks[idxname]
+		lock = cls.idxlocks.get(idxname)
+		if lock == None:
+			lock = threading.Lock()
+			cls.idxlocks[idxname] = lock
+		return lock
 
 	@classmethod
 	def load(cls, datadir):
