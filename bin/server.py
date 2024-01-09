@@ -87,7 +87,7 @@ if __name__ == "__main__":
 	parser.add_argument('datadir')
 	args = parser.parse_args()
 
-	Index.init(args.datadir, args.kite)
+	index.Index.init(args.datadir, args.kite)
 	httpd = ThreadingHTTPServer(('', args.port), RequestHandler)
 
 	try:
