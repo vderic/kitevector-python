@@ -11,7 +11,7 @@ from functools import partial
 import argparse
 import threading
 
-class KiteIndex:
+class Index:
 
 	datadir = None
 	kite_port = 0
@@ -63,6 +63,28 @@ class KiteIndex:
 		idxname = cls.get_indexkey(req)
 		with cls.get_lock(idxname):
 			# create index inside the lock
+
+			schema = req['schema']
+			host = ['localhost:{}'.format(cls.kite_port)]
+			path = req['path']
+			idxcfg = req['config']
+			space = idxcfg['space']
+			dim = idxcfg['dimension']
+			max_elements = idxcfg['max_elements']
+			ef_construction = idxcfg['ef_construction']
+			M = idxcfg['M']
+			p = hnswlib.Index(space=space, dim = dim)
+			p.init_index(max_elements=max_elements, ef_construction=ef_construction, M=M)
+
+			colref = req['colref']
+			idcol = colref['id']
+			embeddingcol = colref['embedding']
+			sql = '''SELECT {}, {} FROM "{}"'''.format(idcol, embeddingcol, path)
+
+
+
+
+
 			pass
 
 	@classmethod

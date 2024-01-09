@@ -146,10 +146,11 @@ class IndexClient:
 				res = callback(key.fileobj, mask)
 				self.batches.append(res)
 				self.selectors.unregister(key.fileobj)
-				try:
-					key.fileobj.close()
-				except OSError as msg:
-					print(msg)
+				# close socket later with connection.close()
+				#try:
+				#	key.fileobj.close()
+				#except OSError as msg:
+				#	print(msg)
 
 				self.responses.remove(key.fileobj)
 			

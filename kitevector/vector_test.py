@@ -25,7 +25,9 @@ if __name__ == "__main__":
 	path = 'tmp/vector/vector*.parquet'
 	filespec = kite.ParquetFileSpec()
 	hosts = ['localhost:7878']
-	schema =  [('id', 'int64'), ('docid', 'int64'), ('embedding', 'float[]')]
+	schema = [{'name':'id', 'type': 'int64'},
+		{'name':'docid', 'type':'int64'},
+		{'name':'embedding', 'type':'float[]'}]
 
 	vs = kv.KiteVector(schema, hosts, 3)
 	embed = gen_embedding(1536)

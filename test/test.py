@@ -31,8 +31,9 @@ if __name__ == "__main__":
 	parquetspec = kite.ParquetFileSpec()
 	hosts = ['localhost:7878']
 	fragcnt = 3
-	schema =  [('id', 'int64'), ('docid', 'int64'), ('embedding', 'float[]')]
-
+	schema = [{'name':'id', 'type': 'int64'},
+		{'name':'docid', 'type':'int64'},
+		{'name':'embedding', 'type':'float[]'}]
 
 	try:
 		embedding = gen_embedding(1536)
