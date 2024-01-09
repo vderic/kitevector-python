@@ -1,6 +1,5 @@
 import os
-from http.server import BaseHTTPRequestHandler, HTTPServer
-from socketserver import ThreadingMixIn
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse
 import json
 import numpy as np
@@ -179,8 +178,8 @@ class RequestHandler(BaseHTTPRequestHandler):
 		else:
 			pass
 
-class ThreadingHttpServer(ThreadingMixIn, HTTPServer):
-	pass
+#class ThreadingHttpServer(ThreadingMixIn, HTTPServer):
+#	pass
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
@@ -190,5 +189,12 @@ if __name__ == "__main__":
 	args = parser.parse_args()
 
 	Index.init(args.datadir, args.kite)
-	httpd = ThreadingHttpServer(('', args.port), RequestHandler)
-	httpd.serve_forever()
+	httpd = ThreadingHTTPServer(('', args.port), RequestHandler)
+
+	try:
+		httpd.serve_forever()
+	except KeyboardInterrupt:
+		pass
+
+	httpd.server_close()
+
