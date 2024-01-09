@@ -19,6 +19,8 @@ class IndexSort:
 
 	def add(self, ids, distances):
 		for id, score in zip(ids, distances):
+			# NOTE: inner product need negative
+			score *= -1
 			if len(self.heap) <= self.nbest:
 				heapq.heappush(self.heap, (score, id))
 			else:
