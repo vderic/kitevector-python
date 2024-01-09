@@ -9,12 +9,10 @@ from kitevector.index import index
 
 class IndexRequest:
 
-	def __init__(self, name, schema, path, fragid, fragcnt, colref, filespec, config):
-		self.name = name
+	def __init__(self, schema, path, fragid, fragcnt, filespec, config):
 		self.schema = schema
 		self.path = path
 		self.fragment = [fragid, fragcnt]
-		self.colref = colref
 		self.config = config.dict()
 		self.filespec = filespec.toJSON()
 		self.embedding = []
@@ -28,6 +26,7 @@ class IndexRequestEncoder(JSONEncoder):
 
 @dataclass
 class IndexConfig:
+	name: str
 	space: str             # possible options are l2, cosine or ip
 	dimension : int        # number of dimension
 	M : int                # parameter that defines the maximum number of outgoing connections in the graph
@@ -36,20 +35,22 @@ class IndexConfig:
 	ef: int                # ef should always be > k
 	num_threads: int       # default number of threads to use in add_items or knn_query. Not that calling p.set_num_threads(3) is equaivalent to p.num_threads=3.
 	k: int                 # number of the closest elements
+	id: str
+	embedding: str
 	
 	def dict(self):
 		return self.__dict__
 
 class IndexClient:
 	
-	def __init__(self, name, schema, path, hosts, fragcnt, colref, filespec, config):
+	def __init__(self, schema, path, hosts, fragcnt, filespec, config):
 		self.selectors = selectors.DefaultSelector()
 		self.connections = []
 		self.responses = []
 		self.batches = []
 		self.fragcnt = fragcnt
 		self.hosts = []
-		self.colref = colref
+		self.config = config
 		nhost = len(hosts)
 
 		self.requests = []
@@ -59,11 +60,11 @@ class IndexClient:
 			h = hostport[0]
 			p = int(hostport[1])
 			self.hosts.append((h, p))
-			self.requests.append(IndexRequest(name, schema, path, i, fragcnt, colref, filespec, config))
-			
-	def get_colref(self):
-		return self.colref
+			self.requests.append(IndexRequest(schema, path, i, fragcnt, filespec, config))
 
+	def get_config(self):
+		return self.config
+			
 	def query(self, embedding, k=None):
 
 		for host, req in zip(self.hosts, self.requests):

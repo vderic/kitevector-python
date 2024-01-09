@@ -28,7 +28,6 @@ if __name__ == "__main__":
 		{'name':'docid', 'type':'int64'},
 		{'name':'embedding', 'type':'float[]'}]
 	path = "tmp/vector/vector*.parquet"
-	index_colref = {"id": "id", "embedding": "embedding"}
 	
 	space = 'ip'
 	dim = 1536
@@ -38,24 +37,25 @@ if __name__ == "__main__":
 	ef = 50
 	num_threads = 1
 	k = 10
-	config = client.IndexConfig(space, dim, M, ef_construction, max_elements, ef, num_threads, k)
+
 	idxname = 'movie'
+	config = client.IndexConfig(idxname, space, dim, M, ef_construction, max_elements, ef, num_threads, k, "id", "embedding")
 
 	cli = None
 	try:
 		filespec = kite.ParquetFileSpec()
 
 		# create indexx
-		cli = client.IndexClient(idxname, schema, path, hosts, fragcnt, index_colref, filespec, config)
+		cli = client.IndexClient(schema, path, hosts, fragcnt, filespec, config)
 		cli.create_index()
 
 		# query index
-		cli = client.IndexClient(idxname, schema, path, hosts, fragcnt, index_colref, filespec, config)
+		cli = client.IndexClient(schema, path, hosts, fragcnt, filespec, config)
 		ids, distances = cli.query([gen_embedding(dim)],3)
 		print(ids, distances)
 
 		# delete index
-		cli = client.IndexClient(idxname, schema, path, hosts, fragcnt, index_colref, filespec, config)
+		cli = client.IndexClient(schema, path, hosts, fragcnt, filespec, config)
 		cli.delete_index()
 	except Exception as msg:
 		print('New Exception: ', msg)

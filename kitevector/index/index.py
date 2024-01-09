@@ -54,7 +54,8 @@ class Index:
 
 	@classmethod
 	def get_indexkey(cls, req):
-		return '{}_{}_{}'.format(req['name'], req['fragment'][0], req['fragment'][1])
+		cfg = req['config']
+		return '{}_{}_{}'.format(cfg['name'], req['fragment'][0], req['fragment'][1])
 
 	@classmethod
 	def get_lock(cls, idxname):
@@ -119,9 +120,8 @@ class Index:
 			p = hnswlib.Index(space=space, dim = dim)
 			p.init_index(max_elements=max_elements, ef_construction=ef_construction, M=M)
 
-			colref = req['colref']
-			idcol = colref['id']
-			embeddingcol = colref['embedding']
+			idcol = idxcfg['id']
+			embeddingcol = idxcfg['embedding']
 			sql = '''SELECT {}, {} FROM "{}"'''.format(idcol, embeddingcol, path)
 			
 			# TODO: check max_elements and resize as needed
