@@ -65,6 +65,8 @@ class Index:
 			# create index inside the lock
 
 			schema = req['schema']
+			filespec = kite.FileSpec.fromJSON(req['filespec'])
+			fragment = req['fragment']
 			host = ['localhost:{}'.format(cls.kite_port)]
 			path = req['path']
 			idxcfg = req['config']
@@ -80,12 +82,30 @@ class Index:
 			idcol = colref['id']
 			embeddingcol = colref['embedding']
 			sql = '''SELECT {}, {} FROM "{}"'''.format(idcol, embeddingcol, path)
+			
+			kitecli = kite.KiteClient()
+			try:
+				kitecli.host(host).sql(sql).schema(schema).filespec(filespec).fragment(fragment[0], fragment[1]).submit()
 
+				while True:
+					iter = kitecli.next_batch()
+					if iter is None:
+						break
+					else:
+						p.add_items(np.float32(iter.value_array[1]), iter.value_array[0])
+			except Exception as msg:
+				print(msg)
+				raise
+			finally:
+				kitecli.close()
 
+			fname = '{}.hnsw'.format(idxname)
+			fname = os.path.join(cls.datadir, fname)
+			print("saving index file ", fname)
+			with open(fname, 'wb') as fp:
+				pickle.dump(p, fp)
 
-
-
-			pass
+			cls.indexes[idxname] = p
 
 	@classmethod
 	def delete(cls, req):
@@ -98,17 +118,23 @@ class RequestHandler(BaseHTTPRequestHandler):
 		body = self.rfile.read(content_length)
 		print(str(body))
 
-		KiteIndex.create(json.loads(body))
+		try:
+			Index.create(json.loads(body))
 
-		status = {'status': 'ok'}
-		msg = json.dumps(status).encode('utf-8')
+			status = {'status': 'ok'}
+			msg = json.dumps(status).encode('utf-8')
 		
-		self.send_response(200)
-		self.send_header("Content-Length", len(msg))
-		self.send_header("Content-Type", "application/json")
-		self.end_headers()
-
-		self.wfile.write(msg)
+			self.send_response(200)
+			self.send_header("Content-Length", len(msg))
+			self.send_header("Content-Type", "application/json")
+			self.end_headers()
+			self.wfile.write(msg)
+		except Exception as e1:
+			print('KeyError: ', e1)
+			self.send_response(402)
+			status = b'''{'status': 'error'}'''
+			self.wfile.write(status)
+			
 
 	def query(self):
 		content_length = int(self.headers.get("Content-Length"))
@@ -116,7 +142,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 		print(str(body))
 
 		try:
-			KiteIndex.query(json.loads(body))
+			Index.query(json.loads(body))
 
 			msg=b'''[[0.3, 1], [0.4, 2]]'''
 
@@ -159,7 +185,7 @@ if __name__ == "__main__":
 	parser.add_argument('datadir')
 	args = parser.parse_args()
 
-	KiteIndex.init(args.datadir, args.kite)
+	Index.init(args.datadir, args.kite)
 	server = ('', args.port)
 	httpd = HTTPServer(server, RequestHandler)
 	httpd.serve_forever()

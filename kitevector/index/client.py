@@ -10,7 +10,7 @@ class IndexRequest:
 
 	def __init__(self, name, schema, path, fragid, fragcnt, colref, filespec, config):
 		self.name = name
-		self.schema = self.to_schema(schema)
+		self.schema = schema
 		self.path = path
 		self.fragment = [fragid, fragcnt]
 		self.colref = colref
@@ -20,16 +20,6 @@ class IndexRequest:
 
 	def set_embedding(self, embedding):
 		self.embedding = embedding
-
-	def to_schema(self, schema):
-		s = []
-		for c in schema:
-			obj = {}
-			obj['name'] = c[0]
-			obj['type'] = c[1]
-			s.append(obj)
-
-		return s
 
 class IndexRequestEncoder(JSONEncoder):
 	def default(self, o):
@@ -173,33 +163,31 @@ if __name__ == "__main__":
 
 	hosts = ["localhost:8181"]
 	fragcnt = 3
-	schema = [("id", "int64"), ("docid", "int64"), ("embedding", "float[]")]
-	path = "tmp/vector/vector*.csv"
+	schema = [{'name':'id', 'type':'int64'},
+		{'name':'docid', 'type':'int64'},
+		{'name':'embedding', 'type':'float[]'}]
+	path = "tmp/vector/vector*.parquet"
 	index_colref = {"id": "id", "embedding": "embedding"}
 	
 	space = 'ip'
 	dim = 1536
 	M = 16
 	ef_construction = 200
-	max_elements = 1000
+	max_elements = 10000
 	ef = 50
 	num_threads = 1
 	k = 10
 	config = IndexConfig(space, dim, M, ef_construction, max_elements, ef, num_threads, k)
-
-	req = IndexRequest("movieindex", schema, path, 2, fragcnt, index_colref, kite.ParquetFileSpec(), config)
-	print(json.dumps(req, cls=IndexRequestEncoder))
-	#print(req.json(config))
 
 	embedding = [1.0333,2.3455,3.334]
 
 	client = None
 	try:
 		filespec = kite.ParquetFileSpec()
-		client = IndexClient("movieindex", schema, path, hosts, fragcnt, index_colref, filespec, config)
+		client = IndexClient("movie", schema, path, hosts, fragcnt, index_colref, filespec, config)
 		client.create_index()
-		client = IndexClient("movieindex", schema, path, hosts, fragcnt, index_colref, filespec, config)
-		client.query(embedding)
+		#client = IndexClient("movieindex", schema, path, hosts, fragcnt, index_colref, filespec, config)
+		#client.query(embedding)
 	except Exception as msg:
 		print('Exception: ', msg)
 	finally:
