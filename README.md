@@ -38,7 +38,7 @@ CREATE FOREIGN TABLE ai_ext (
 id bigint,
 docid bigint,
 embedding vector(1536)
-) server kite_svr options (schema_name 'public', table_name 'vector/vector*.csv', fmt 'csv');
+) server kite_svr options (schema_name 'public', table_name 'vector/vector*.parquet', fmt 'parquet');
 ```
 
 Schema in GPDB:
@@ -52,7 +52,7 @@ CREATE FOREIGN TABLE ai_ext (
 id bigint,
 docid bigint,
 embedding   vector(1536)
-) server kite_svr options (table_name 'vector/vector*.csv', fmt 'csv', mpp_execute 'multi servers');
+) server kite_svr options (table_name 'vector/vector*.parquet', fmt 'parquet', mpp_execute 'multi servers');
 ```
 
 
@@ -65,7 +65,7 @@ Run test,
 To get the N-Best documents without Index,
 
 ```
-	path = 'vector/vector*.csv'
+	path = 'vector/vector*.parquet'
 	# use parquet as source file
 	parquetspec = kite.ParquetFileSpec()
 	hosts = ['localhost:7878']
@@ -89,7 +89,7 @@ To get the N-Best documents with distributed index,
 ```
 	kite_hosts = ['localhost:7878']
 	idx_hosts = ['localhost:8181']
-	path = 'vector/vector*.csv'
+	path = 'vector/vector*.parquet'
 	# use parquet as source file
 	parquetspec = kite.ParquetFileSpec()
 	schema = [{'name':'id', 'type':'int64'},
