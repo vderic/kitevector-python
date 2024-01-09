@@ -5,6 +5,7 @@ from json import JSONEncoder
 import selectors
 import copy
 from kite import kite
+from kitevector.index import index
 
 class IndexRequest:
 
