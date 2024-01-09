@@ -62,7 +62,7 @@ Run test,
 % python3 test/test.py
 ```
 
-To get the N-Best documents,
+To get the N-Best documents without Index,
 
 ```
 	path = 'vector/vector*.csv'
@@ -76,9 +76,46 @@ To get the N-Best documents,
 	try:
 		vs = kv.KiteVector(schema, hosts, fragcnt)
 		vs.format(parquetspec).table(path).select(['id', 'docid']).order_by(kv.VectorExpr('embedding').inner_product(embedding))
-		rows, scores = vs.filter(kv.ScalarArrayOpExpr('id', [999, 4833])).limit(nbest).execute()
+		rows = vs.filter(kv.ScalarArrayOpExpr('id', [999, 4833])).limit(nbest).execute()
 		print(rows)
-		print(scores)
+	except Exception as msg:
+		print(msg)
+```
+
+To get the N-Best documents Index,
+
+```
+	kite_hosts = ['localhost:7878']
+	idx_hosts = ['localhost:8181']
+	path = 'vector/vector*.csv'
+	# use parquet as source file
+	parquetspec = kite.ParquetFileSpec()
+	schema =  [('id', 'int64'), ('docid', 'int64'), ('embedding', 'float[]', 0, 0)]
+	embedding = gen_embedding(1536)   # open AI embedding
+	nbest = 3
+
+	# index specific setting
+	space = 'ip'
+	dim = 1536
+	M = 16
+	ef_construction = 200
+	max_elements = 10000
+	ef = 50
+	num_threads = 1
+	k = 10
+	id_col = "id"     # column name of index column
+	embedding_col = "embedding"   # column name of embedding column
+	idxname = 'index'    # index name and idenitifier
+
+	config = client.IndexConfig(idxname, space, dim, M, ef_construction,
+		max_elements, ef, num_threads, k, id_col, embedding_col)
+
+	try:
+		vs = kv.KiteVector(schema, kite_hosts, fragcnt)
+		vs.format(parquetspec).table(path).select(['id', 'docid']).order_by(kv.VectorExpr('embedding').inner_product(embedding)).limit(nbest)
+		vs.index(idx_hosts, config)
+		rows = vs.execute()
+		print(rows)
 	except Exception as msg:
 		print(msg)
 ```
