@@ -122,6 +122,7 @@ class Index:
 			embeddingcol = colref['embedding']
 			sql = '''SELECT {}, {} FROM "{}"'''.format(idcol, embeddingcol, path)
 			
+			# TODO: check max_elements and resize as needed
 			kitecli = kite.KiteClient()
 			try:
 				kitecli.host(host).sql(sql).schema(schema).filespec(filespec).fragment(fragment[0], fragment[1]).submit()
@@ -148,7 +149,15 @@ class Index:
 
 	@classmethod
 	def delete(cls, req):
-		print("KiteIndex.delete")
+		idxname = cls.get_indexkey(req)
+		print("KiteIndex.delete: ", idxname)
+		with cls.get_lock(idxname):
+			fpath = os.path.join(cls.datadir, '{}.hnsw'.format(idxname))
+			if os.path.exists(fpath):
+				os.remove(fpath)
+			cls.indexes.pop(idxname)
+			cls.idxlocks.pop(idxname)
+			
 
 if __name__ == "__main__":
 

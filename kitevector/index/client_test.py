@@ -39,15 +39,24 @@ if __name__ == "__main__":
 	num_threads = 1
 	k = 10
 	config = client.IndexConfig(space, dim, M, ef_construction, max_elements, ef, num_threads, k)
+	idxname = 'movie'
 
 	cli = None
 	try:
 		filespec = kite.ParquetFileSpec()
-		#cli = client.IndexClient("movie", schema, path, hosts, fragcnt, index_colref, filespec, config)
-		#cli.create_index()
-		cli = client.IndexClient("movie", schema, path, hosts, fragcnt, index_colref, filespec, config)
+
+		# create indexx
+		cli = client.IndexClient(idxname, schema, path, hosts, fragcnt, index_colref, filespec, config)
+		cli.create_index()
+
+		# query index
+		cli = client.IndexClient(idxname, schema, path, hosts, fragcnt, index_colref, filespec, config)
 		ids, distances = cli.query([gen_embedding(dim)],3)
 		print(ids, distances)
+
+		# delete index
+		cli = client.IndexClient(idxname, schema, path, hosts, fragcnt, index_colref, filespec, config)
+		cli.delete_index()
 	except Exception as msg:
 		print('New Exception: ', msg)
 	finally:

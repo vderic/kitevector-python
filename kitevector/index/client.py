@@ -107,7 +107,6 @@ class IndexClient:
 		for host, req in zip(self.hosts, self.requests):
 			conn = http.client.HTTPConnection(host[0], host[1])
 			headers = {'Content-Type': 'application/json'}
-			req.set_embedding(embedding)
 			json_data = json.dumps(req, cls=IndexRequestEncoder)
 			conn.request('POST', '/create', json_data, headers)
 			self.connections.append(conn)
@@ -127,7 +126,26 @@ class IndexClient:
 			print(r)
 
 	def delete_index(self):
-		pass
+		for host, req in zip(self.hosts, self.requests):
+			conn = http.client.HTTPConnection(host[0], host[1])
+			headers = {'Content-Type': 'application/json'}
+			json_data = json.dumps(req, cls=IndexRequestEncoder)
+			conn.request('DELETE', '/delete', json_data, headers)
+			self.connections.append(conn)
+
+		for c in self.connections:
+			r = c.getresponse()
+			self.responses.append(r)
+			self.selectors.register(r, selectors.EVENT_READ, self.read)
+
+
+		while True:
+			r = self.next()
+			if r is None:
+				break
+
+			# got result from Hnsw index and do heap sort to get nbest
+			print(r)
 
 	def read(self, response, mask):
 		try:
