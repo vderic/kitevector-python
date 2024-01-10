@@ -95,8 +95,6 @@ class RequestHandler(BaseHTTPRequestHandler):
 			self.delete_index()
 
 	def do_POST(self):
-		print("path = " , self.path)
-
 		if self.path == '/create':
 			self.create_index()
 		elif self.path == '/query':

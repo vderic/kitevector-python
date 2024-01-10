@@ -128,7 +128,9 @@ class IndexClient:
 				break
 
 			# got result from Hnsw index and do heap sort to get nbest
-			print(r)
+			response = json.loads(r)
+			if response['status'] != 'ok':
+				raise Exception("create_index: server error")
 
 	def delete_index(self):
 		for host, req in zip(self.hosts, self.requests):
@@ -150,7 +152,9 @@ class IndexClient:
 				break
 
 			# got result from Hnsw index and do heap sort to get nbest
-			print(r)
+			response = json.loads(r)
+			if response['status'] != 'ok':
+				raise Exception("delete_index: server error")
 
 	def read(self, response, mask):
 		try:

@@ -73,12 +73,10 @@ class Index:
 			raise Exception("data directory not exists")
 		
 		flist = glob.glob('*.hnsw', root_dir = cls.datadir)
-		print(flist)
 		for f in flist:
 			idxname = os.path.splitext(os.path.basename(f))[0]
 			fpath = os.path.join(cls.datadir, f)
 			with cls.get_lock(idxname):
-				print("KiteIndex.load ", idxname)
 				# load the index inside the lock
 				with open(fpath, 'rb') as fp:
 					idx = pickle.load(fp)
@@ -88,12 +86,10 @@ class Index:
 	def query(cls, req):	
 		idx = None
 		idxname = cls.get_indexkey(req)
-		print(idxname)
 		with cls.get_lock(idxname):
 			idx = cls.indexes[idxname]
 
 		# found the index and get the nbest
-		print("KiteIndex.query")
 		embedding = np.float32(req['embedding'])
 		ef = req['config']['ef']
 		k  = req['config']['k']
@@ -103,7 +99,6 @@ class Index:
 
 	@classmethod
 	def create(cls, req):
-		print("KiteIndex.create")
 		idxname = cls.get_indexkey(req)
 		with cls.get_lock(idxname):
 			# create index inside the lock
@@ -154,7 +149,6 @@ class Index:
 
 			fname = '{}.hnsw'.format(idxname)
 			fname = os.path.join(cls.datadir, fname)
-			print("saving index file ", fname)
 			with open(fname, 'wb') as fp:
 				pickle.dump(p, fp)
 
@@ -163,7 +157,6 @@ class Index:
 	@classmethod
 	def delete(cls, req):
 		idxname = cls.get_indexkey(req)
-		print("KiteIndex.delete: ", idxname)
 		with cls.get_lock(idxname):
 			fpath = os.path.join(cls.datadir, '{}.hnsw'.format(idxname))
 			if os.path.exists(fpath):
