@@ -213,7 +213,7 @@ class KiteVector(BaseVector):
 			sql += ' WHERE '
 			sql += ' AND '.join([str(f) for f in self.filters])
 			
-		print(sql)
+		#print(sql)
 		return sql
 		
 
