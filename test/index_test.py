@@ -37,7 +37,7 @@ if __name__ == "__main__":
 	dim = 1536
 	M = 16
 	ef_construction = 200
-	max_elements = 10000
+	max_elements = 100
 	ef = 50
 	num_threads = 1
 	k = 10

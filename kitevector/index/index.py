@@ -131,12 +131,21 @@ class Index:
 			try:
 				kitecli.host(host).sql(sql).schema(schema).filespec(filespec).fragment(fragment[0], fragment[1]).submit()
 
+				curr = 0
 				while True:
 					iter = kitecli.next_batch()
 					if iter is None:
 						break
-					else:
-						p.add_items(np.float32(iter.value_array[1]), iter.value_array[0])
+
+					nitem = iter.nitem
+					needed = curr + nitem
+					if needed > max_elements:
+						n = 2 * max_elements
+						max_elements = (n if n > needed else needed)
+						p.resize_index(max_elements)
+					p.add_items(np.float32(iter.value_array[1]), iter.value_array[0])
+					curr += nitem
+
 			except Exception as msg:
 				print(msg)
 				raise
