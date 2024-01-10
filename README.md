@@ -88,7 +88,7 @@ To get the N-Best documents with distributed index,
 
 ```
 	kite_hosts = ['localhost:7878']
-	idx_hosts = ['localhost:8181']
+	idx_hosts = ['localhost:8878']
 	path = 'vector/vector*.parquet'
 	# use parquet as source file
 	parquetspec = kite.ParquetFileSpec()
@@ -99,25 +99,27 @@ To get the N-Best documents with distributed index,
 	nbest = 3
 
 	# index specific setting
-	space = 'ip'
-	dim = 1536
-	M = 16
-	ef_construction = 200
-	max_elements = 10000
-	ef = 50
-	num_threads = 1
-	k = 10
-	id_col = "id"     # column name of index column
-	embedding_col = "embedding"   # column name of embedding column
-	idxname = 'index'    # index name and idenitifier
-
-	config = client.IndexConfig(idxname, space, dim, M, ef_construction,
-		max_elements, ef, num_threads, k, id_col, embedding_col)
+	index_params = {
+		"name" : "movie",
+		"metric_type": "ip",
+		"index_type": "hnsw",
+		"params":{
+			"dimension": 1536,
+			"max_elements": 100,
+			"M": 16,
+			"ef_construction": 200,
+			"ef" : 50,
+			"num_threads": 1,
+			"k" : 10,
+			"id_field" : "id",
+			"embedding_field": "embedding"
+		}
+	}
 
 	try:
 		vs = kv.KiteVector(schema, kite_hosts, fragcnt)
 		vs.format(parquetspec).table(path).select(['id', 'docid']).order_by(kv.VectorExpr('embedding').inner_product(embedding)).limit(nbest)
-		vs.index(idx_hosts, config)
+		vs.index(idx_hosts, index_params)
 		rows = vs.execute()
 		print(rows)
 	except Exception as msg:
