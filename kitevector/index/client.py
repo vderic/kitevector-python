@@ -9,11 +9,11 @@ from kitevector.index import index
 
 class IndexRequest:
 
-	def __init__(self, schema, path, fragid, fragcnt, filespec, config):
+	def __init__(self, schema, path, fragid, fragcnt, filespec, index_params):
 		self.schema = schema
 		self.path = path
 		self.fragment = [fragid, fragcnt]
-		self.config = config.dict()
+		self.index_params = index_params
 		self.filespec = filespec.toJSON()
 		self.embedding = []
 
@@ -24,33 +24,16 @@ class IndexRequestEncoder(JSONEncoder):
 	def default(self, o):
 		return o.__dict__
 
-@dataclass
-class IndexConfig:
-	name: str
-	space: str             # possible options are l2, cosine or ip
-	dimension : int        # number of dimension
-	M : int                # parameter that defines the maximum number of outgoing connections in the graph
-	ef_construction: int   # parameter that controls speed/accuracy trade-off during the index construction
-	max_elements: int      # max number of elements 
-	ef: int                # ef should always be > k
-	num_threads: int       # default number of threads to use in add_items or knn_query. Not that calling p.set_num_threads(3) is equaivalent to p.num_threads=3.
-	k: int                 # number of the closest elements
-	id: str
-	embedding: str
-	
-	def dict(self):
-		return self.__dict__
-
 class IndexClient:
 	
-	def __init__(self, schema, path, hosts, fragcnt, filespec, config):
+	def __init__(self, schema, path, hosts, fragcnt, filespec, index_params):
 		self.selectors = selectors.DefaultSelector()
 		self.connections = []
 		self.responses = []
 		self.batches = []
 		self.fragcnt = fragcnt
 		self.hosts = []
-		self.config = config
+		self.index_params = index_params
 		nhost = len(hosts)
 
 		self.requests = []
@@ -60,10 +43,10 @@ class IndexClient:
 			h = hostport[0]
 			p = int(hostport[1])
 			self.hosts.append((h, p))
-			self.requests.append(IndexRequest(schema, path, i, fragcnt, filespec, config))
+			self.requests.append(IndexRequest(schema, path, i, fragcnt, filespec, index_params))
 
-	def get_config(self):
-		return self.config
+	def get_index_params(self):
+		return self.index_params
 			
 	def query(self, embedding, k=None):
 
@@ -71,8 +54,9 @@ class IndexClient:
 			conn = http.client.HTTPConnection(host[0], host[1])
 			headers = {'Content-Type': 'application/json'}
 			req.set_embedding(embedding)
+			params = req.index_params['params']
 			if k is not None:
-				req.config['k'] = k
+				params['k'] = k
 			json_data = json.dumps(req, cls=IndexRequestEncoder)
 
 			conn.request('POST', '/query', json_data, headers)

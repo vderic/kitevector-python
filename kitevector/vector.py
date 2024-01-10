@@ -185,8 +185,8 @@ class KiteVector(BaseVector):
 		
 
 	# call after table() and format()
-	def index(self, hosts, config):
-		self.indexcli = client.IndexClient(self.schema, self.path, hosts, self.fragcnt, self.filespec, config)
+	def index(self, hosts, index_params):
+		self.indexcli = client.IndexClient(self.schema, self.path, hosts, self.fragcnt, self.filespec, index_params)
 		return self
 
 
@@ -249,8 +249,9 @@ class KiteVector(BaseVector):
 			ids, distances = self.indexcli.query([self.orderby.right.embedding], self.nlimit)
 
 			if len(ids) > 0:
-				cfg = self.indexcli.get_config()
-				idfilter = ScalarArrayOpExpr(cfg.id, ids[0])
+				index_params = self.indexcli.get_index_params()
+				params = index_params['params']
+				idfilter = ScalarArrayOpExpr(params['id_field'], ids[0])
 				self.filter(idfilter)
 				sql = self.index_sql()
 				return self.scan(sql)

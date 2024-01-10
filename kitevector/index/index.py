@@ -56,8 +56,8 @@ class Index:
 
 	@classmethod
 	def get_indexkey(cls, req):
-		cfg = req['config']
-		return '{}_{}_{}'.format(cfg['name'], req['fragment'][0], req['fragment'][1])
+		index_params = req['index_params']
+		return '{}_{}_{}'.format(index_params['name'], req['fragment'][0], req['fragment'][1])
 
 	@classmethod
 	def get_lock(cls, idxname):
@@ -91,8 +91,9 @@ class Index:
 
 		# found the index and get the nbest
 		embedding = np.float32(req['embedding'])
-		ef = req['config']['ef']
-		k  = req['config']['k']
+		params = req['index_params']['params']
+		ef = params['ef']
+		k  = params['k']
 		idx.set_ef(ef)
 		ids, distances = idx.knn_query(embedding, k=k)
 		return ids, distances
@@ -108,17 +109,18 @@ class Index:
 			fragment = req['fragment']
 			host = ['localhost:{}'.format(cls.kite_port)]
 			path = req['path']
-			idxcfg = req['config']
-			space = idxcfg['space']
-			dim = idxcfg['dimension']
-			max_elements = idxcfg['max_elements']
-			ef_construction = idxcfg['ef_construction']
-			M = idxcfg['M']
+			index_params = req['index_params']
+			space = index_params['metric_type']
+			params = index_params['params']
+			dim = params['dimension']
+			max_elements = params['max_elements']
+			ef_construction = params['ef_construction']
+			M = params['M']
 			p = hnswlib.Index(space=space, dim = dim)
 			p.init_index(max_elements=max_elements, ef_construction=ef_construction, M=M)
 
-			idcol = idxcfg['id']
-			embeddingcol = idxcfg['embedding']
+			idcol = params['id_field']
+			embeddingcol = params['embedding_field']
 			sql = '''SELECT {}, {} FROM "{}"'''.format(idcol, embeddingcol, path)
 			
 			# TODO: check max_elements and resize as needed

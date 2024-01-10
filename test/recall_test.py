@@ -61,20 +61,22 @@ if __name__ == "__main__":
 	filespec = kite.ParquetFileSpec()
 	
 	# index specific setting
-	space = 'ip'
-	dim = 1536
-	M = 16
-	ef_construction = 200
-	max_elements = 10000
-	ef = 50
-	num_threads = 1
-	k = 10
-	id_col = "id"     # column name of index column
-	embedding_col = "embedding"   # column name of embedding column
-	idxname = 'movie'    # index name and idenitifier
-
-	config = client.IndexConfig(idxname, space, dim, M, ef_construction, 
-		max_elements, ef, num_threads, k, id_col, embedding_col)
+	index_params = {
+		"name" : "movie",
+		"metric_type": "ip",
+		"index_type": "hnsw",
+		"params":{
+			"dimension": 1536,
+			"max_elements": 100,
+			"M": 16,
+			"ef_construction": 200,
+			"ef" : 50,
+			"num_threads": 1,
+			"k" : 10,
+			"id_field" : "id",
+			"embedding_field": "embedding"
+		}
+	}
 
 	cli = None
 
@@ -82,14 +84,14 @@ if __name__ == "__main__":
 		ids, embeddings = load(schema, kite_hosts, filespec, path)
 
 		# create indexx
-		#cli = client.IndexClient(schema, path, idx_hosts, fragcnt, filespec, config)
+		#cli = client.IndexClient(schema, path, idx_hosts, fragcnt, filespec, index_params)
 		#cli.create_index()
 
 
 		recall = 0
 		for id, embedding in zip(ids, embeddings):	
 			# query index
-			cli = client.IndexClient(schema, path, idx_hosts, fragcnt, filespec, config)
+			cli = client.IndexClient(schema, path, idx_hosts, fragcnt, filespec, index_params)
 			res_ids = cli.query([embedding.tolist()],1)
 			if res_ids[0] == id:
 				recall += 1
@@ -97,7 +99,7 @@ if __name__ == "__main__":
 		print("recall = ", recall, " / ", len(ids))
 
 		# delete index
-		#cli = client.IndexClient(schema, path, idx_hosts, fragcnt, filespec, config)
+		#cli = client.IndexClient(schema, path, idx_hosts, fragcnt, filespec, index_params)
 		#cli.delete_index()
 	except Exception as msg:
 		print('New Exception: ', msg)

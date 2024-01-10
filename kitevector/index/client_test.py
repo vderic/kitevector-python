@@ -22,43 +22,50 @@ if __name__ == "__main__":
 
 	random.seed(1)
 
-	hosts = ["localhost:8181"]
+	hosts = ["localhost:8878"]
 	fragcnt = 3
 	schema = [{'name':'id', 'type':'int64'},
 		{'name':'docid', 'type':'int64'},
 		{'name':'embedding', 'type':'float[]'}]
 	path = "tmp/vector/vector*.parquet"
+	filespec = kite.ParquetFileSpec()
 	
-	space = 'ip'
-	dim = 1536
-	M = 16
-	ef_construction = 200
-	max_elements = 10000
-	ef = 50
-	num_threads = 1
-	k = 10
+	# index specific setting
+	index_params = {
+		"name" : "movie",
+		"metric_type": "ip",
+		"index_type": "hnsw",
+		"params":{
+			"dimension": 1536,
+			"max_elements": 100,
+			"M": 16,
+			"ef_construction": 200,
+			"ef" : 50,
+			"num_threads": 1,
+			"k" : 10,
+			"id_field" : "id",
+			"embedding_field": "embedding"
+		}
+	}
 
-	idxname = 'movie'
-	config = client.IndexConfig(idxname, space, dim, M, ef_construction, max_elements, ef, num_threads, k, "id", "embedding")
 
 	cli = None
 	try:
-		filespec = kite.ParquetFileSpec()
 
-		# create indexx
-		cli = client.IndexClient(schema, path, hosts, fragcnt, filespec, config)
+		# create index
+		cli = client.IndexClient(schema, path, hosts, fragcnt, filespec, index_params)
 		cli.create_index()
 
 		# query index
-		cli = client.IndexClient(schema, path, hosts, fragcnt, filespec, config)
+		cli = client.IndexClient(schema, path, hosts, fragcnt, filespec, index_params)
 		ids, distances = cli.query([gen_embedding(dim)],3)
 		print(ids, distances)
 
 		# delete index
-		cli = client.IndexClient(schema, path, hosts, fragcnt, filespec, config)
+		cli = client.IndexClient(schema, path, hosts, fragcnt, filespec, index_params)
 		cli.delete_index()
 	except Exception as msg:
-		print('New Exception: ', msg)
+		print('Exception: ', msg)
 	finally:
 		if cli is not None:
 			cli.close()

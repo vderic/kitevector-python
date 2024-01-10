@@ -21,26 +21,27 @@ if __name__ == "__main__":
 	filespec = kite.ParquetFileSpec()
 
 	# index specific setting
-	space = 'ip'
-	dim = 1536
-	M = 16
-	ef_construction = 200
-	max_elements = 100
-	ef = 50
-	num_threads = 1
-	k = 10
-	id_col = "id"     # column name of index column
-	embedding_col = "embedding"   # column name of embedding column
-	idxname = 'movie'    # index name and idenitifier
-
-	config = client.IndexConfig(idxname, space, dim, M, ef_construction,
-		max_elements, ef, num_threads, k, id_col, embedding_col)
+	index_params = {
+		"name" : "movie",
+		"metric_type": "ip",
+		"index_type": "hnsw",
+		"params":{
+			"dimension": 1536,
+			"max_elements": 100,
+			"M": 16,
+			"ef_construction": 200,
+			"ef" : 50,
+			"num_threads": 1,
+			"k" : 10,
+			"id_field" : "id",
+			"embedding_field": "embedding"
+		}
+	}
 
 	cli = None
-
 	try:
 
-		cli = client.IndexClient(schema, path, idx_hosts, fragcnt, filespec, config)
+		cli = client.IndexClient(schema, path, idx_hosts, fragcnt, filespec, index_params)
 
 		if args.delete:
 			# delete index
