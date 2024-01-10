@@ -309,8 +309,8 @@ class KiteVector(BaseVector):
 			cols = []
 			for i in range(len(h)):
 				t = heapq.heappop(h)
-				scores.append(t[0])
-				cols.append(t[1:])
+				scores.insert(0, t[0])
+				cols.insert(0, t[1:])
 
 			return cols
 

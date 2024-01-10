@@ -51,7 +51,7 @@ if __name__ == "__main__":
 
 	random.seed(1)
 
-	idx_hosts = ["localhost:8181"]
+	idx_hosts = ["localhost:8878"]
 	kite_hosts = ['localhost:7878']
 	fragcnt = 3
 	schema = [{'name':'id', 'type':'int64'},

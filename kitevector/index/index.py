@@ -34,8 +34,8 @@ class IndexSort:
 		ids = []
 		for i in range(len(self.heap)):
 			t = heapq.heappop(self.heap)
-			scores.append(t[0])
-			ids.append(t[1])
+			scores.insert(0, t[0])
+			ids.insert(0, t[1])
 
 		return ids, scores
 
