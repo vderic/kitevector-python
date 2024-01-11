@@ -271,32 +271,32 @@ class KiteVector(BaseVector):
 		if self.index_params['index_type'] == 'flat':
 			sql = self.sql()
 			return self.sort(sql)
-		else:
-			if self.index_hosts is None:
-				raise ValueError('index hosts is not defined')
-			if not isinstance(self.orderby, OpExpr): 
-				raise ValueError("order by is not OpExpr")
-			if not isinstance(self.orderby.left, VectorExpr):
-				raise ValueError("order by left is not VectorExpr")
-			if not isinstance(self.orderby.right, Embedding):
-				raise ValueError("order by left is not Embedding")
 
-			self.indexcli = client.IndexClient(self.schema, self.path, self.index_hosts, self.fragcnt, self.filespec, self.index_params)
-			ids, distances = self.indexcli.query([self.orderby.right.embedding], self.nlimit)
+		if self.index_hosts is None:
+			raise ValueError('index hosts is not defined')
+		if not isinstance(self.orderby, OpExpr): 
+			raise ValueError("order by is not OpExpr")
+		if not isinstance(self.orderby.left, VectorExpr):
+			raise ValueError("order by left is not VectorExpr")
+		if not isinstance(self.orderby.right, Embedding):
+			raise ValueError("order by left is not Embedding")
 
-			if len(ids) == 0:
-				return []
+		self.indexcli = client.IndexClient(self.schema, self.path, self.index_hosts, self.fragcnt, self.filespec, self.index_params)
+		ids, distances = self.indexcli.query([self.orderby.right.embedding], self.nlimit)
 
-			idfilter = ScalarArrayOpExpr(params['id_field'], ids[0])
-			self.filter(idfilter)
-			sql = self.index_sql()
-			dict = self.scan(sql)
+		if len(ids) == 0:
+			return []
 
-			results = []
-			for id, distance in zip(ids[0], distances[0]):
-				results.append({'id': id, 'distance': distance, 'values': dict[id]})
+		idfilter = ScalarArrayOpExpr(params['id_field'], ids[0])
+		self.filter(idfilter)
+		sql = self.index_sql()
+		dict = self.scan(sql)
 
-			return results
+		results = []
+		for id, distance in zip(ids[0], distances[0]):
+			results.append({'id': id, 'distance': distance, 'values': dict[id]})
+
+		return results
 
 	def scan(self, sql):
 		kitecli = kite.KiteClient()
