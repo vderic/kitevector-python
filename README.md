@@ -75,9 +75,19 @@ To get the N-Best documents without Index,
 	embedding = gen_embedding(1536)   # open AI embedding
 	nbest = 3
 
+	# Flat index specific setting
+	flat_index_params = {
+		"metric_type": "ip",
+		"index_type": "flat",
+		"params":{
+			"id_field" : "id",
+			"embedding_field": "embedding"
+		}
+	}
+
 	try:
 		vs = kv.KiteVector(schema, hosts, fragcnt)
-		vs.format(parquetspec).table(path).select(['id', 'docid']).order_by(kv.VectorExpr('embedding').inner_product(embedding))
+		vs.format(parquetspec).table(path).select(['docid']).index(flat_index_params, embedding)
 		rows = vs.filter(kv.ScalarArrayOpExpr('id', [999, 4833])).limit(nbest).execute()
 		print(rows)
 	except Exception as msg:
@@ -118,8 +128,8 @@ To get the N-Best documents with distributed index,
 
 	try:
 		vs = kv.KiteVector(schema, kite_hosts, fragcnt)
-		vs.format(parquetspec).table(path).select(['id', 'docid']).order_by(kv.VectorExpr('embedding').inner_product(embedding)).limit(nbest)
-		vs.index(idx_hosts, index_params)
+		vs.format(parquetspec).table(path).select(['docid']).limit(nbest)
+		vs.index(index_params, embedding, hosts=idx_hosts)
 		rows = vs.execute()
 		print(rows)
 	except Exception as msg:
