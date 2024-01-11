@@ -9,7 +9,7 @@ from kitevector import vector as kv
 if __name__ == "__main__":
 
 	parser = argparse.ArgumentParser()
-	parser.add_argument('--delete', action='store_true')
+	parser.add_argument('-i', '--interval', type=int, default=10)
 	args = parser.parse_args()
 
 	idx_hosts = ["localhost:8878"]
@@ -68,7 +68,7 @@ if __name__ == "__main__":
 			else:
 				print("ok = {} processing= {} processed count= {}".format(ok_cnt, processing_cnt, record_processed))
 
-			time.sleep(2)
+			time.sleep(args.interval)
 
 	except Exception as e:
 		print('Exception:', e)

@@ -11,7 +11,7 @@ if __name__ == "__main__":
 
 	parser = argparse.ArgumentParser()
 	parser.add_argument('--delete', action='store_true')
-	parser.add_argument('--status', type=int, default=10)
+	parser.add_argument('--status', type=int, default=0)
 	args = parser.parse_args()
 
 	idx_hosts = ["localhost:8878"]
@@ -54,6 +54,7 @@ if __name__ == "__main__":
 			cli.create_index()
 
 			if args.status == 0:
+				print('Create index thread started and running. Please use status.py to check the status')
 				sys.exit(0)
 
 			while True:
