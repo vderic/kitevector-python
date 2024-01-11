@@ -153,6 +153,7 @@ class BaseVector:
 		self.filespec = filespec
 		return self
 
+
 class PgVector(BaseVector):
 
 	def __init__(self):
@@ -184,14 +185,13 @@ class KiteVector(BaseVector):
 		self.indexcli = None
 		self.index_params = None
 		self.index_hosts = None
+		self.data = None
 		
-
-	# call after table() and format()
-	def index(self, index_params, hosts=None):
+	def index(self, index_params, data, hosts=None):
 		self.index_hosts = hosts
 		self.index_params = index_params
+		self.data = data
 		return self
-
 
 	def sql(self):
 		if self.orderby is None or self.nlimit is None:
@@ -247,6 +247,22 @@ class KiteVector(BaseVector):
 		return sql
 
 	def execute(self):
+
+		if self.index_params is None:
+			raise ValueError('index_params is not defined')
+
+		params = self.index_params['params']
+		metric_type = self.index_params['metric_type']
+		if metric_type == 'ip':
+			self.orderby = VectorExpr(params['embedding_field']).inner_product(self.data)
+		else:
+			raise ValueError('only inner product is supported')
+
+		#elif metric_type == 'cosine':
+		#	self.orderby = VectorExpr(params['embedding_field']).cosine_distance(self.data)
+		#elif metric_ttpe == 'l2':
+		#	self.orderby = VectorExpr(params['embedding_field']).l2_distance(self.data)
+
 		if self.index_params['index_type'] == 'flat':
 			sql = self.sql()
 			return self.sort(sql)
@@ -266,7 +282,6 @@ class KiteVector(BaseVector):
 			if len(ids) == 0:
 				return []
 
-			params = self.index_params['params']
 			idfilter = ScalarArrayOpExpr(params['id_field'], ids[0])
 			self.filter(idfilter)
 			sql = self.index_sql()

@@ -74,8 +74,8 @@ if __name__ == "__main__":
 
 		# flat index or no index brute force search
 		vs = kv.KiteVector(schema, kite_hosts, fragcnt)
-		vs.format(filespec).table(path).select(['docid']).order_by(kv.VectorExpr('embedding').inner_product(embedding)).limit(3)
-		vs.index(flat_index_params)
+		vs.format(filespec).table(path).select(['docid']).limit(3)
+		vs.index(flat_index_params, embedding)
 		rows = vs.execute()
 		print(rows)
 
@@ -86,8 +86,8 @@ if __name__ == "__main__":
 
 		# kitevector
 		vs = kv.KiteVector(schema, kite_hosts, fragcnt)
-		vs.format(filespec).table(path).select(['docid']).order_by(kv.VectorExpr('embedding').inner_product(embedding)).limit(3)
-		vs.index(index_params, hosts=idx_hosts)
+		vs.format(filespec).table(path).select(['docid']).limit(3)
+		vs.index(index_params, embedding, hosts=idx_hosts)
 		rows = vs.execute()
 		print(rows)
 
