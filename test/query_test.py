@@ -55,6 +55,7 @@ if __name__ == "__main__":
 	# flat index
 	flat_index_params = {
 		"index_type": "flat",
+		"metric_type": "ip",
 		"params":{
 			"id_field" : "id",
 			"embedding_field": "embedding"
