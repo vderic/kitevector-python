@@ -180,7 +180,7 @@ class Index:
 		if p is None:
 			p = cls.indexes.get(idxname)
 			if p is None:
-				return {'status':'error', 'message': 'index not found'}
+				return {'status':'error', 'name': idxname, 'message': 'index not found'}
 
 			return {'status':'ok', 'name': idxname, 'element_count': p.element_count, 'max_elements': p.max_elements}
 		
