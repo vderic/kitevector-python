@@ -61,6 +61,11 @@ class Index:
 		return '{}_{}_{}'.format(index_params['name'], req['fragment'][0], req['fragment'][1])
 
 	@classmethod
+	def index_exists(cls, req):
+		key = cls.get_indexkey(req)
+		return cls.indexes.get(key) is not None or cls.processing_indexes.get(key) is not None
+
+	@classmethod
 	def get_lock(cls, idxname):
 		lock = cls.idxlocks.get(idxname)
 		if lock == None:
@@ -104,7 +109,6 @@ class Index:
 		idxname = cls.get_indexkey(req)
 		with cls.get_lock(idxname):
 			# create index inside the lock
-
 			schema = req['schema']
 			filespec = kite.FileSpec.fromJSON(req['filespec'])
 			fragment = req['fragment']

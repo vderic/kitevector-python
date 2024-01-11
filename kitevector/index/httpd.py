@@ -21,15 +21,23 @@ class RequestHandler(BaseHTTPRequestHandler):
 		#print(str(body))
 
 		def create_index_task(**kwargs):
-			body = kwargs.get('post_data', {})
+			req = kwargs.get('post_data', {})
 			try:
-				index.Index.create(json.loads(body))
+				index.Index.create(req)
 			except Exception as e:
 				print('Error: ', e1)
 
 		try:
 
-			thread = threading.Thread(target=create_index_task, kwargs={'post_data': body})
+			req = json.loads(body)
+
+			if index.Index.index_exists(req):
+				self.send_response(200)
+				status = b'''{'status': 'error', 'message': 'index already exists'}'''
+				self.wfile.write(status)
+				return
+
+			thread = threading.Thread(target=create_index_task, kwargs={'post_data': req})
 			thread.start()
 
 			status = {'status': 'ok'}
