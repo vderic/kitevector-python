@@ -131,6 +131,6 @@ def run(port, datadir, kite_port):
 		httpd.serve_forever()
 	except KeyboardInterrupt:
 		pass
-
-	httpd.server_close()
+	finally:
+		httpd.server_close()
 
