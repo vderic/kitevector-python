@@ -285,7 +285,7 @@ class KiteVector(BaseVector):
 		ids, distances = self.indexcli.query([self.orderby.right.embedding], self.nlimit)
 
 		if len(ids) == 0:
-			return []
+			return [{'ids':[], 'distances':[], 'values':[]}]
 
 		idfilter = ScalarArrayOpExpr(params['id_field'], ids[0])
 		self.filter(idfilter)
