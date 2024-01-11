@@ -292,10 +292,11 @@ class KiteVector(BaseVector):
 		sql = self.index_sql()
 		dict = self.scan(sql)
 
-		results = []
-		for id, distance in zip(ids[0], distances[0]):
-			results.append({'id': id, 'distance': distance, 'values': dict[id]})
+		values = []
+		for id in ids[0]:
+			values.append(dict[id])
 
+		results = {'ids': ids[0], 'distances': distances[0], 'values': values}
 		return results
 
 	def scan(self, sql):
@@ -345,11 +346,16 @@ class KiteVector(BaseVector):
 			if len(h) == self.nlimit+1:
 				heapq.heappop(h)
 
-			results = []
+			ids = []
+			distances = []
+			values = []
 			for i in range(len(h)):
 				t = heapq.heappop(h)
-				results.insert(0, {'id': t[1], 'distance': t[0], 'values': list(t[2:])})
+				ids.insert(0, t[1])
+				distances.insert(0, t[0])
+				values.insert(0, list(t[2:]))
 
+			results = {'ids': ids, 'distances': distances, 'values': values}
 			return results
 
 		except OSError as msg:
