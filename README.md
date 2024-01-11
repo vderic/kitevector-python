@@ -81,7 +81,7 @@ To get the N-Best documents without Index,
 		"index_type": "flat",
 		"params":{
 			"id_field" : "id",
-			"embedding_field": "embedding"
+			"vector_field": "embedding"
 		}
 	}
 
@@ -122,7 +122,7 @@ To get the N-Best documents with distributed index,
 			"num_threads": 1,
 			"k" : 10,
 			"id_field" : "id",
-			"embedding_field": "embedding"
+			"vector_field": "embedding"
 		}
 	}
 
@@ -149,7 +149,7 @@ You can also generate the SQL and run with your favorite postgres client,
 		"index_type": "hnsw",
 		"params":{
 			"id_field" : "id",
-			"embedding_field": "embedding"
+			"vector_field": "embedding"
 		}
 	}
 

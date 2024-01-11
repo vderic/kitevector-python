@@ -177,11 +177,11 @@ class PgVector(BaseVector):
 		params = self.index_params['params']
 		metric_type = self.index_params['metric_type']
 		if metric_type == 'ip':
-			self.orderby = VectorExpr(params['embedding_field']).inner_product(self.data)
+			self.orderby = VectorExpr(params['vector_field']).inner_product(self.data)
 		elif metric_type == 'cosine':
-			self.orderby = VectorExpr(params['embedding_field']).cosine_distance(self.data)
+			self.orderby = VectorExpr(params['vector_field']).cosine_distance(self.data)
 		elif metric_type == 'l2':
-			self.orderby = VectorExpr(params['embedding_field']).l2_distance(self.data)
+			self.orderby = VectorExpr(params['vector_field']).l2_distance(self.data)
 		return self
 	
 class KiteVector(BaseVector):
@@ -201,14 +201,14 @@ class KiteVector(BaseVector):
 		params = self.index_params['params']
 		metric_type = self.index_params['metric_type']
 		if metric_type == 'ip':
-			self.orderby = VectorExpr(params['embedding_field']).inner_product(self.data)
+			self.orderby = VectorExpr(params['vector_field']).inner_product(self.data)
 		else:
 			raise ValueError('only inner product is supported')
 
 		#elif metric_type == 'cosine':
-		#	self.orderby = VectorExpr(params['embedding_field']).cosine_distance(self.data)
+		#	self.orderby = VectorExpr(params['vector_field']).cosine_distance(self.data)
 		#elif metric_ttpe == 'l2':
-		#	self.orderby = VectorExpr(params['embedding_field']).l2_distance(self.data)
+		#	self.orderby = VectorExpr(params['vector_field']).l2_distance(self.data)
 		return self
 
 	def sql(self):

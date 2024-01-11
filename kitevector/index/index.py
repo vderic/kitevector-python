@@ -120,7 +120,7 @@ class Index:
 			p.init_index(max_elements=max_elements, ef_construction=ef_construction, M=M)
 
 			idcol = params['id_field']
-			embeddingcol = params['embedding_field']
+			embeddingcol = params['vector_field']
 			sql = '''SELECT {}, {} FROM "{}"'''.format(idcol, embeddingcol, path)
 			
 			# TODO: check max_elements and resize as needed

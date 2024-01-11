@@ -74,7 +74,7 @@ if __name__ == "__main__":
 			"num_threads": 1,
 			"k" : 10,
 			"id_field" : "id",
-			"embedding_field": "embedding"
+			"vector_field": "embedding"
 		}
 	}
 

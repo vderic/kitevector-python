@@ -30,7 +30,7 @@ if __name__ == "__main__":
 		"index_type": "hnsw",
 		"params":{
 			"id_field" : "id",
-			"embedding_field": "embedding"
+			"vector_field": "embedding"
 		}
 	}
 
