@@ -182,11 +182,14 @@ class KiteVector(BaseVector):
 		self.hosts = hosts
 		self.fragcnt = fragcnt
 		self.indexcli = None
+		self.index_params = None
+		self.index_hosts = None
 		
 
 	# call after table() and format()
-	def index(self, hosts, index_params):
-		self.indexcli = client.IndexClient(self.schema, self.path, hosts, self.fragcnt, self.filespec, index_params)
+	def index(self, index_params, hosts=None):
+		self.index_hosts = hosts
+		self.index_params = index_params
 		return self
 
 
@@ -204,10 +207,16 @@ class KiteVector(BaseVector):
 		if self.indexcli is None:
 			raise ValueError("Index not defined")
 
+		project = []
 		if self.projection is None or len(self.projection) == 0:
 			raise ValueError("projection not defined")
 
-		sql = '''SELECT {} FROM "{}"'''.format(','.join([str(c) if isinstance(c, Expr) else c for c in self.projection]), self.path)
+		params = self.index_params['params']
+
+		project.append(params['id_field'])
+		project.extend(self.projection)
+
+		sql = '''SELECT {} FROM "{}"'''.format(','.join([str(c) if isinstance(c, Expr) else c for c in project]), self.path)
 
 		if self.filters is not None and len(self.filters) > 0:
 			sql += ' WHERE '
@@ -222,6 +231,9 @@ class KiteVector(BaseVector):
 		if self.orderby is not None:
 			project.append(self.orderby)
 
+		params = self.index_params['params']
+		project.append(params['id_field'])
+
 		if self.projection is not None and len(self.projection) > 0:
 			project.extend(self.projection)
 
@@ -235,10 +247,12 @@ class KiteVector(BaseVector):
 		return sql
 
 	def execute(self):
-		if self.indexcli is None:
+		if self.index_params['index_type'] == 'flat':
 			sql = self.sql()
 			return self.sort(sql)
 		else:
+			if self.index_hosts is None:
+				raise ValueError('index hosts is not defined')
 			if not isinstance(self.orderby, OpExpr): 
 				raise ValueError("order by is not OpExpr")
 			if not isinstance(self.orderby.left, VectorExpr):
@@ -246,21 +260,27 @@ class KiteVector(BaseVector):
 			if not isinstance(self.orderby.right, Embedding):
 				raise ValueError("order by left is not Embedding")
 
+			self.indexcli = client.IndexClient(self.schema, self.path, self.index_hosts, self.fragcnt, self.filespec, self.index_params)
 			ids, distances = self.indexcli.query([self.orderby.right.embedding], self.nlimit)
 
-			if len(ids) > 0:
-				index_params = self.indexcli.get_index_params()
-				params = index_params['params']
-				idfilter = ScalarArrayOpExpr(params['id_field'], ids[0])
-				self.filter(idfilter)
-				sql = self.index_sql()
-				return self.scan(sql)
+			if len(ids) == 0:
+				return []
 
-			return []
+			params = self.index_params['params']
+			idfilter = ScalarArrayOpExpr(params['id_field'], ids[0])
+			self.filter(idfilter)
+			sql = self.index_sql()
+			dict = self.scan(sql)
+
+			results = []
+			for id, distance in zip(ids[0], distances[0]):
+				results.append({'id': id, 'distance': distance, 'values': dict[id]})
+
+			return results
 
 	def scan(self, sql):
 		kitecli = kite.KiteClient()
-		h = []
+		dict = {}
 		try:
 			kitecli.host(self.hosts).sql(sql).schema(self.schema).filespec(self.filespec).fragment(-1, self.fragcnt).submit()
 
@@ -270,8 +290,8 @@ class KiteVector(BaseVector):
 				if iter is None:
 					break
 				else:
-					h.append(tuple(iter.values))
-			return h
+					dict[iter.values[0]] = iter.values[1:]
+			return dict
 
 		except OSError as msg:
 			print(msg)
@@ -305,15 +325,12 @@ class KiteVector(BaseVector):
 			if len(h) == self.nlimit+1:
 				heapq.heappop(h)
 
-
-			scores = []
-			cols = []
+			results = []
 			for i in range(len(h)):
 				t = heapq.heappop(h)
-				scores.insert(0, t[0])
-				cols.insert(0, t[1:])
+				results.insert(0, {'id': t[1], 'distance': t[0], 'values': list(t[2:])})
 
-			return cols
+			return results
 
 		except OSError as msg:
 			print(msg)

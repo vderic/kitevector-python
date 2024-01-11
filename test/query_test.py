@@ -52,6 +52,15 @@ if __name__ == "__main__":
 		}
 	}
 
+	# flat index
+	flat_index_params = {
+		"index_type": "flat",
+		"params":{
+			"id_field" : "id",
+			"embedding_field": "embedding"
+		}
+	}
+
 	cli = None
 	embedding = gen_embedding(dim)
 
@@ -62,15 +71,22 @@ if __name__ == "__main__":
 		#cli = client.IndexClient(schema, path, idx_hosts, fragcnt, filespec, index_params)
 		#cli.create_index()
 
+		# flat index or no index brute force search
+		vs = kv.KiteVector(schema, kite_hosts, fragcnt)
+		vs.format(filespec).table(path).select(['docid']).order_by(kv.VectorExpr('embedding').inner_product(embedding)).limit(3)
+		vs.index(flat_index_params)
+		rows = vs.execute()
+		print(rows)
+
 		# query index
-		cli = client.IndexClient(schema, path, idx_hosts, fragcnt, filespec, index_params)
-		ids = cli.query([embedding],3)
-		print(ids)
+		# cli = client.IndexClient(schema, path, idx_hosts, fragcnt, filespec, index_params)
+		# ids = cli.query([embedding],3)
+		# print(ids)
 
 		# kitevector
 		vs = kv.KiteVector(schema, kite_hosts, fragcnt)
-		vs.format(filespec).table(path).select(['id', 'docid']).order_by(kv.VectorExpr('embedding').inner_product(embedding)).limit(3)
-		vs.index(idx_hosts, index_params)
+		vs.format(filespec).table(path).select(['docid']).order_by(kv.VectorExpr('embedding').inner_product(embedding)).limit(3)
+		vs.index(index_params, hosts=idx_hosts)
 		rows = vs.execute()
 		print(rows)
 
@@ -79,7 +95,7 @@ if __name__ == "__main__":
 		#cli = client.IndexClient(schema, path, idx_hosts, fragcnt, filespec, index_params)
 		#cli.delete_index()
 	except Exception as msg:
-		print('New Exception: ', msg)
+		print('Exception: ', msg)
 	finally:
 		if cli is not None:
 			cli.close()
