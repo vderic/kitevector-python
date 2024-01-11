@@ -140,6 +140,30 @@ class IndexClient:
 			if response['status'] != 'ok':
 				raise Exception("delete_index: server error")
 
+	def status(self):
+		for host, req in zip(self.hosts, self.requests):
+			conn = http.client.HTTPConnection(host[0], host[1])
+			headers = {'Content-Type': 'application/json'}
+			json_data = json.dumps(req, cls=IndexRequestEncoder)
+			conn.request('POST', '/status', json_data, headers)
+			self.connections.append(conn)
+
+		for c in self.connections:
+			r = c.getresponse()
+			self.responses.append(r)
+			self.selectors.register(r, selectors.EVENT_READ, self.read)
+
+
+		responses = []
+		while True:
+			r = self.next()
+			if r is None:
+				break
+
+			responses.append(r)
+
+		return responses
+
 	def read(self, response, mask):
 		try:
 			return response.read().decode()

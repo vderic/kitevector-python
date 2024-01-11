@@ -45,6 +45,7 @@ class Index:
 	datadir = None
 	kite_port = 0
 	indexes = {}
+	processing_indexes = {}
 	idxlocks = {}
 
 	@classmethod
@@ -119,6 +120,9 @@ class Index:
 			p = hnswlib.Index(space=space, dim = dim)
 			p.init_index(max_elements=max_elements, ef_construction=ef_construction, M=M)
 
+			# save index to processing index so that we can keep track of the status
+			cls.processing_indexes[idxname] = p
+
 			idcol = params['id_field']
 			embeddingcol = params['vector_field']
 			sql = '''SELECT {}, {} FROM "{}"'''.format(idcol, embeddingcol, path)
@@ -155,6 +159,8 @@ class Index:
 				pickle.dump(p, fp)
 
 			cls.indexes[idxname] = p
+			cls.processing_indexes.pop(idxname)
+
 
 	@classmethod
 	def delete(cls, req):
@@ -166,6 +172,19 @@ class Index:
 			cls.indexes.pop(idxname)
 			cls.idxlocks.pop(idxname)
 			
+
+	@classmethod
+	def status(cls, req):
+		idxname = cls.get_indexkey(req)
+		p = cls.processing_indexes.get(idxname)
+		if p is None:
+			p = cls.indexes.get(idxname)
+			if p is None:
+				return {'status':'error', 'message': 'index not found'}
+
+			return {'status':'ready', 'element_count': p.element_count, 'max_elements': p.max_elements}
+		
+		return {'status': 'processing', 'element_count': p.element_count, 'max_elements': p.max_elements}
 
 if __name__ == "__main__":
 

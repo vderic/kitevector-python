@@ -89,6 +89,25 @@ class RequestHandler(BaseHTTPRequestHandler):
 			self.send_response(402)
 			status = b'''{'status': 'error'}'''
 			self.wfile.write(status)
+
+	def status(self):
+		content_length = int(self.headers.get("Content-Length"))
+		body = self.rfile.read(content_length)
+
+		try:
+			status = index.Index.status(json.loads(body))
+			msg = json.dumps(status).encode('utf-8')
+			self.send_response(200)
+			self.send_header("Content-Length", len(msg))
+			self.send_header("Content-Type", "application/json")
+			self.end_headers()
+			self.wfile.write(msg)
+		except Exception as e:
+			print(e)
+			self.send_response(402)
+			status = b'''{'status': 'error'}'''
+			self.wfile.write(status)
+
 	
 	def do_DELETE(self):
 		if self.path == '/delete':
@@ -99,6 +118,8 @@ class RequestHandler(BaseHTTPRequestHandler):
 			self.create_index()
 		elif self.path == '/query':
 			self.query()
+		elif self.path == '/status':
+			self.status()
 		else:
 			pass
 
