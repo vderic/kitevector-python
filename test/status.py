@@ -62,11 +62,11 @@ if __name__ == "__main__":
 
 				record_processed += res['element_count']
 			if ok_cnt == fragcnt:
-				print("ok = {} processing= {} processed count= {}".format(ok_cnt, processing_cnt, record_processed))
+				print("index done = {}/{}, elements processed = {}".format(ok_cnt, fragcnt, record_processed))
 				print("Create Index finished")
 				break
 			else:
-				print("ok = {} processing= {} processed count= {}".format(ok_cnt, processing_cnt, record_processed))
+				print("index done = {}/{}, elements processed = {}".format(ok_cnt, fragcnt, record_processed))
 
 			time.sleep(args.interval)
 
