@@ -20,8 +20,17 @@ class RequestHandler(BaseHTTPRequestHandler):
 		body = self.rfile.read(content_length)
 		#print(str(body))
 
+		def create_index_task(**kwargs):
+			body = kwargs.get('post_data', {})
+			try:
+				index.Index.create(json.loads(body))
+			except Exception as e:
+				print('Error: ', e1)
+
 		try:
-			index.Index.create(json.loads(body))
+
+			thread = threading.Thread(target=create_index_task, kwargs={'post_data': body})
+			thread.start()
 
 			status = {'status': 'ok'}
 			msg = json.dumps(status).encode('utf-8')
