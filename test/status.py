@@ -1,5 +1,6 @@
 import argparse
 import json
+import time
 from kite import kite
 from kite.xrg import xrg
 from kitevector.index import client
@@ -41,10 +42,34 @@ if __name__ == "__main__":
 	cli = None
 	try:
 
-		cli = client.IndexClient(schema, path, idx_hosts, fragcnt, filespec, index_params)
+		while True:
+			cli = client.IndexClient(schema, path, idx_hosts, fragcnt, filespec, index_params)
+			responses = cli.status()
+			ok_cnt = 0
+			processing_cnt = 0
+			record_processed = 0
 
-		statuses = cli.status()
-		print(statuses)
+			#print(responses)
+			for r in responses:
+				res = json.loads(r)
+				if res['status'] == 'ok':
+					ok_cnt += 1
+				elif res['status'] == 'processing':
+					processing_cnt += 1
+				elif res['status'] == 'error':
+					raise Exception(res['message'])
+
+
+				record_processed += res['element_count']
+			if ok_cnt == fragcnt:
+				print("ok = {} processing= {} processed count= {}".format(ok_cnt, processing_cnt, record_processed))
+				print("Create Index finished")
+				break
+			else:
+				print("ok = {} processing= {} processed count= {}".format(ok_cnt, processing_cnt, record_processed))
+
+			time.sleep(2)
+
 	except Exception as e:
 		print('Exception:', e)
 	finally:
