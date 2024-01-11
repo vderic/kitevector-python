@@ -120,12 +120,12 @@ class Index:
 			p = hnswlib.Index(space=space, dim = dim)
 			p.init_index(max_elements=max_elements, ef_construction=ef_construction, M=M)
 
-			# save index to processing index so that we can keep track of the status
-			cls.processing_indexes[idxname] = p
-
 			idcol = params['id_field']
 			embeddingcol = params['vector_field']
 			sql = '''SELECT {}, {} FROM "{}"'''.format(idcol, embeddingcol, path)
+
+			# save index to processing index so that we can keep track of the status
+			cls.processing_indexes[idxname] = p
 			
 			# TODO: check max_elements and resize as needed
 			kitecli = kite.KiteClient()
@@ -148,6 +148,7 @@ class Index:
 					curr += nitem
 
 			except Exception as msg:
+				cls.processing_indexes.pop(idxname)
 				print(msg)
 				raise
 			finally:
