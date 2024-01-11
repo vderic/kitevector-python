@@ -24,16 +24,33 @@ if __name__ == "__main__":
 	random.seed(1)
 	path = 'tmp/vector/vector*.parquet'
 	filespec = kite.ParquetFileSpec()
-	hosts = ['localhost:7878']
+	kite_hosts = ['localhost:7878']
+	idx_hosts = ['localhost:8878']
 	schema = [{'name':'id', 'type': 'int64'},
 		{'name':'docid', 'type':'int64'},
 		{'name':'embedding', 'type':'float[]'}]
 
-	vs = kv.KiteVector(schema, hosts, 3)
+	# index specific setting
+	index_params = {
+		"name" : "movie",
+		"metric_type": "ip",
+		"index_type": "hnsw",
+		"params":{
+			"dimension": 1536,
+			"max_elements": 100,
+			"M": 16,
+			"ef_construction": 200,
+			"ef" : 50,
+			"num_threads": 1,
+			"k" : 10,
+			"id_field" : "id",
+			"embedding_field": "embedding"
+		}
+	}
+
+	vs = kv.KiteVector(schema, kite_hosts, 3)
 	embed = gen_embedding(1536)
-	vs.format(filespec).select([kv.Var('id'), kv.OpExpr('+', 'docid', 2)]).table(path).order_by(kv.VectorExpr("embedding").inner_product(embed))
-	vs.filter(kv.OpExpr('>', kv.VectorExpr("embedding").inner_product(embed), 0.07)).limit(5)
+	vs.format(filespec).select([kv.Var('id'), kv.OpExpr('+', 'docid', 2)]).table(path).index(index_params, embed, idx_hosts).limit(5)
 	#print(vs.sql())
-	rows, scores = vs.execute()
-	print(rows)
-	print(scores)
+	results = vs.execute()
+	print(results)

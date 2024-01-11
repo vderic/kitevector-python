@@ -127,14 +127,12 @@ class BaseVector:
 		self.nlimit = None
 		self.path = None
 		self.filespec = None
+		self.index_params = None
+		self.index_hosts = None
+		self.data = None
 
 	def select(self, projection):
 		self.projection = projection
-		return self
-
-	def order_by(self, expr):
-		self.orderby = expr
-
 		return self
 
 	def limit(self, limit):
@@ -152,7 +150,6 @@ class BaseVector:
 	def format(self, filespec):
 		self.filespec = filespec
 		return self
-
 
 class PgVector(BaseVector):
 
@@ -173,7 +170,19 @@ class PgVector(BaseVector):
 			sql += ' LIMIT {}'.format(self.nlimit)
 		return sql
 
+	def index(self, index_params, data):
+		self.index_params = index_params
+		self.data = data
 
+		params = self.index_params['params']
+		metric_type = self.index_params['metric_type']
+		if metric_type == 'ip':
+			self.orderby = VectorExpr(params['embedding_field']).inner_product(self.data)
+		elif metric_type == 'cosine':
+			self.orderby = VectorExpr(params['embedding_field']).cosine_distance(self.data)
+		elif metric_type == 'l2':
+			self.orderby = VectorExpr(params['embedding_field']).l2_distance(self.data)
+		return self
 	
 class KiteVector(BaseVector):
 
@@ -183,13 +192,7 @@ class KiteVector(BaseVector):
 		self.hosts = hosts
 		self.fragcnt = fragcnt
 		self.indexcli = None
-		self.index_params = None
-		self.index_hosts = None
-		self.data = None
 		
-	def order_by(self, expr):
-		raise ValueError('KiteVector does not support order_by().  Use index() instead.')
-
 	def index(self, index_params, data, hosts=None):
 		self.index_hosts = hosts
 		self.index_params = index_params

@@ -24,16 +24,21 @@ if __name__ == "__main__":
 	random.seed(1)
 	path = 'ext_ai'
 
+	# index specific setting
+	index_params = {
+		"metric_type": "l2",
+		"index_type": "hnsw",
+		"params":{
+			"id_field" : "id",
+			"embedding_field": "embedding"
+		}
+	}
+
 	vs = kv.PgVector()
 	embed = gen_embedding(1536)
-	#vs.select(['id', 'docid']).table(path).order_by(vector.Embedding("embedding").inner_product(embed))
-	vs.select(['id', 'docid']).table(path)
-	vs.filter(kv.OpExpr('>', kv.VectorExpr("embedding").inner_product(embed), 0.07)).limit(5)
-	sql = vs.sql()
-	print(sql)
 
 	vs1 = kv.PgVector()
-	vs1.select([kv.Var('id'), kv.OpExpr('-', 'docid', 6)]).table(path).order_by(kv.Var("docid"))
+	vs1.select([kv.Var('id'), kv.OpExpr('-', 'docid', 6)]).table(path).index(index_params, embed)
 	vs1.filter(kv.ScalarArrayOpExpr("id", [1,2,3])).filter(kv.OpExpr('>', 'id', 0.7)).limit(5)
 	sql = vs1.sql()
 	print(sql)

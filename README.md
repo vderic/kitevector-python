@@ -143,9 +143,19 @@ You can also generate the SQL and run with your favorite postgres client,
 	nbest = 3
 	table = 'ai_ext'
 
+	# index specific setting
+	index_params = {
+		"metric_type": "ip",
+		"index_type": "hnsw",
+		"params":{
+			"id_field" : "id",
+			"embedding_field": "embedding"
+		}
+	}
+
 	try:
 		vs = kv.PgVector()
-		vs.table(table).select(['id', 'docid']).order_by(kv.VectorExpr('embedding').inner_product(embedding))
+		vs.table(table).select(['id', 'docid']).index(index_params, embedding)
 		sql = vs.filter(kv.ScalarArrayOpExpr('id', [999, 4833])).limit(nbest).sql()
 		print(sql)
 	except Exception as msg:
