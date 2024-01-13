@@ -100,7 +100,9 @@ class Index:
 		params = req['index_params']['params']
 		ef = params['ef']
 		k  = params['k']
+		num_threads = params['num_threads']
 		idx.set_ef(ef)
+		idx.set_num_threads(num_threads)
 		ids, distances = idx.knn_query(embedding, k=k)
 		return ids, distances
 
@@ -121,8 +123,10 @@ class Index:
 			max_elements = params['max_elements']
 			ef_construction = params['ef_construction']
 			M = params['M']
+			num_threads = params['num_threads']
 			p = hnswlib.Index(space=space, dim = dim)
 			p.init_index(max_elements=max_elements, ef_construction=ef_construction, M=M)
+			p.set_num_threads(num_threads)
 
 			idcol = params['id_field']
 			embeddingcol = params['vector_field']
