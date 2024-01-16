@@ -191,9 +191,9 @@ class Index:
 			if p is None:
 				return {'status':'error', 'name': idxname, 'message': 'index not found'}
 
-			return {'status':'ok', 'name': idxname, 'element_count': p.element_count, 'max_elements': p.max_elements}
+			return {'status':'ok', 'name': idxname, 'element_count': p.get_current_count(), 'max_elements': p.get_max_elements()}
 		
-		return {'status': 'processing', 'name': idxname, 'element_count': p.element_count, 'max_elements': p.max_elements}
+		return {'status': 'processing', 'name': idxname, 'element_count': p.get_current_count(), 'max_elements': p.max_elements()}
 
 if __name__ == "__main__":
 
