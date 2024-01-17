@@ -107,10 +107,35 @@ class Index:
 		return ids, distances
 
 	@classmethod
+	def create_init(cls, req):
+		idxname = cls.get_indexkey(req)
+		with cls.get_lock(idxname):
+			# create index inside the lock
+			index_params = req['index_params']
+			space = index_params['metric_type']
+			params = index_params['params']
+			dim = params['dimension']
+			max_elements = params['max_elements']
+			ef_construction = params['ef_construction']
+			M = params['M']
+			num_threads = params['num_threads']
+			p = hnswlib.Index(space=space, dim = dim)
+			p.init_index(max_elements=max_elements, ef_construction=ef_construction, M=M)
+			p.set_num_threads(num_threads)
+
+			# save index to processing index so that we can keep track of the status
+			cls.processing_indexes[idxname] = p
+
+	@classmethod
 	def create(cls, req):
 		idxname = cls.get_indexkey(req)
 		with cls.get_lock(idxname):
 			# create index inside the lock
+			p = cls.processing_indexes.get(idxname)
+			if p is None:
+				print("create index error: processing index {} not found".format(idxname))
+				return
+
 			schema = req['schema']
 			filespec = kite.FileSpec.fromJSON(req['filespec'])
 			fragment = req['fragment']
@@ -124,17 +149,11 @@ class Index:
 			ef_construction = params['ef_construction']
 			M = params['M']
 			num_threads = params['num_threads']
-			p = hnswlib.Index(space=space, dim = dim)
-			p.init_index(max_elements=max_elements, ef_construction=ef_construction, M=M)
-			p.set_num_threads(num_threads)
 
 			idcol = params['id_field']
 			embeddingcol = params['vector_field']
 			sql = '''SELECT {}, {} FROM "{}"'''.format(idcol, embeddingcol, path)
 
-			# save index to processing index so that we can keep track of the status
-			cls.processing_indexes[idxname] = p
-			
 			# TODO: check max_elements and resize as needed
 			kitecli = kite.KiteClient()
 			try:
@@ -158,10 +177,11 @@ class Index:
 			except Exception as msg:
 				cls.processing_indexes.pop(idxname)
 				print(msg)
-				raise
+				return
 			finally:
 				kitecli.close()
 
+			# save to file
 			fname = '{}.hnsw'.format(idxname)
 			fname = os.path.join(cls.datadir, fname)
 			with open(fname, 'wb') as fp:

@@ -37,6 +37,9 @@ class RequestHandler(BaseHTTPRequestHandler):
 				self.wfile.write(status)
 				return
 
+			# init create index
+			index.Index.create_init(req)
+
 			thread = threading.Thread(target=create_index_task, kwargs={'post_data': req})
 			thread.start()
 
@@ -51,7 +54,8 @@ class RequestHandler(BaseHTTPRequestHandler):
 		except Exception as e1:
 			print('KeyError: ', e1)
 			self.send_response(402)
-			status = b'''{'status': 'error'}'''
+			status_dic = {'status':'error', 'message': str(e1)}
+			status = json.dumps(status_dic).encode('utf-8')
 			self.wfile.write(status)
 			
 
@@ -78,12 +82,14 @@ class RequestHandler(BaseHTTPRequestHandler):
 		except KeyError as e1:
 			print('KeyError: ', e1)
 			self.send_response(402)
-			status = b'''{'status': 'error'}'''
+			status_dic = {'status':'error', 'message': str(e1)}
+			status = json.dumps(status_dic).encode('utf-8')
 			self.wfile.write(status)
 		except Exception as e2:
 			print(e2)
 			self.send_response(402)
-			status = b'''{'status': 'error'}'''
+			status_dic = {'status':'error', 'message': str(e2)}
+			status = json.dumps(status_dic).encode('utf-8')
 			self.wfile.write(status)
 			
 
