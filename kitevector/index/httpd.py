@@ -104,7 +104,8 @@ class RequestHandler(BaseHTTPRequestHandler):
 		except Exception as e:
 			print(e)
 			self.send_response(402)
-			status = b'''{'status': 'error'}'''
+			status_dic = {'status':'error', 'message': str(e)}
+			status = json.dumps(status_dic).encode('utf-8')
 			self.wfile.write(status)
 
 	def status(self):
@@ -122,7 +123,8 @@ class RequestHandler(BaseHTTPRequestHandler):
 		except Exception as e:
 			print(e)
 			self.send_response(402)
-			status = b'''{'status': 'error'}'''
+			status_dic = {'status':'error', 'message': str(e)}
+			status = json.dumps(status_dic).encode('utf-8')
 			self.wfile.write(status)
 
 	
