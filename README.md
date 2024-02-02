@@ -166,4 +166,7 @@ You can also generate the SQL and run with your favorite postgres client,
 
 Note:
 
-I tried to put one million vectors and the vector dimension was 1,280. The HNSW requires 4 * d + 8 * M Bytes for each vector for just storing the graph. The Amazon ES team recommended me to have 1.5 times larger memory than the required amount. The M was 48 in the experiment, so (4 * 1,280 + 8 * 48) * 1.5 * 1M = 7.7GB is needed for the dataset.
+The size of HNSW index estimate by the formula = 4 * d + 8 * M Bytes where d is the vector dimension and M is the setting of HNSW.
+We recommend to have 1.5 times larger memory than the required amount.
+
+e.g. For one million vectors and the vector dimension was 1,280 and M was 48, the esimate index size = (4 * 1,280 + 8 * 48) * 1.5 * 1M = 7.7GB is needed for the dataset.
